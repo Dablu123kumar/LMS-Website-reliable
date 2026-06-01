@@ -1,0 +1,269 @@
+/* ─── Admin Dashboard Page ─── */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.loadingState {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 40vh;
+  color: var(--text-muted);
+}
+
+/* ─── Welcome Card ─── */
+.welcomeCard {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(239, 68, 68, 0.06));
+  border: 1px solid rgba(245, 158, 11, 0.15);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+}
+
+.welcomeTitle {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.welcomeSubtitle {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+/* ─── Stats Grid ─── */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.statCard {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  text-decoration: none;
+  transition: all var(--transition-base);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.statCard:hover {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-glass-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+
+.statIcon {
+  font-size: 1.8rem;
+}
+
+.statValue {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.statCard_blue .statValue { color: var(--accent-blue); }
+.statCard_green .statValue { color: var(--accent-green); }
+.statCard_purple .statValue { color: var(--accent-purple); }
+.statCard_amber .statValue { color: #f59e0b; }
+
+/* ─── Section Header ─── */
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.viewAllLink {
+  font-size: 0.88rem;
+  color: #f59e0b;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.viewAllLink:hover {
+  color: #fbbf24;
+}
+
+/* ─── Quick Actions ─── */
+.actionsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.actionCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 22px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.92rem;
+  transition: all var(--transition-base);
+}
+
+.actionCard:hover {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-glass-hover);
+  transform: translateY(-1px);
+}
+
+.actionIcon {
+  font-size: 1.3rem;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.actionCard_blue .actionIcon { background: rgba(99, 102, 241, 0.15); }
+.actionCard_rose .actionIcon { background: rgba(244, 63, 94, 0.15); }
+.actionCard_green .actionIcon { background: rgba(16, 185, 129, 0.15); }
+
+.actionLabel {
+  flex: 1;
+}
+
+.actionArrow {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  transition: transform var(--transition-fast);
+}
+
+.actionCard:hover .actionArrow {
+  transform: translateX(4px);
+  color: #f59e0b;
+}
+
+/* ─── Table ─── */
+.tableWrapper {
+  overflow-x: auto;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 14px 20px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.table th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.studentName {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.studentAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.studentEmail {
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+}
+
+.enrollBadge {
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--accent-blue);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.dateCell {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 1024px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .actionsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .welcomeCard {
+    padding: 22px 20px;
+  }
+
+  .welcomeTitle {
+    font-size: 1.25rem;
+  }
+}

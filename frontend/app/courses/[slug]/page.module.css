@@ -1,0 +1,699 @@
+/* ─── Course Detail Page ─── */
+
+.page {
+  min-height: 100vh;
+  padding-top: var(--navbar-height);
+  animation: fadeIn 0.5s ease;
+}
+
+/* ─── Back Link ─── */
+.backLinkContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px 0;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.backLink:hover {
+  color: var(--accent-blue);
+}
+
+.backArrow {
+  font-size: 1.1rem;
+  transition: transform var(--transition-fast);
+}
+
+.backLink:hover .backArrow {
+  transform: translateX(-4px);
+}
+
+/* ─── Hero Banner ─── */
+.hero {
+  position: relative;
+  padding: 60px 20px 80px;
+  overflow: hidden;
+}
+
+.heroBg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(30px) brightness(0.3);
+  transform: scale(1.2);
+  z-index: 0;
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(10, 14, 39, 0.7) 0%,
+    rgba(10, 14, 39, 0.95) 100%
+  );
+  z-index: 1;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.heroBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.categoryBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--accent-blue);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.difficultyBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.difficultyBadge[data-level="Beginner"] {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--accent-green);
+}
+
+.difficultyBadge[data-level="Intermediate"] {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--accent-amber);
+}
+
+.difficultyBadge[data-level="Advanced"] {
+  background: rgba(244, 63, 94, 0.15);
+  color: var(--accent-rose);
+}
+
+.heroTitle {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 16px;
+  max-width: 700px;
+}
+
+.heroDescription {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  line-height: 1.7;
+  max-width: 650px;
+  margin-bottom: 28px;
+}
+
+.heroMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 24px;
+}
+
+.instructorMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.instructorAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(99, 102, 241, 0.5);
+}
+
+.instructorName {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.instructorLabel {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ratingMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ratingStars {
+  display: flex;
+  gap: 2px;
+  color: var(--accent-amber);
+  font-size: 0.95rem;
+}
+
+.ratingValue {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--accent-amber);
+}
+
+.enrollmentBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.enrollmentBadge span {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.durationMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* ─── Content Layout ─── */
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px 80px;
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 40px;
+  align-items: start;
+}
+
+/* ─── Left Column ─── */
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+/* ─── What You'll Learn ─── */
+.learnSection h2,
+.curriculumSection h2,
+.instructorSection h2 {
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.featuresGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.featureItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.featureItem:hover {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-glass-hover);
+}
+
+.featureCheck {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--accent-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.featureText {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ─── Curriculum ─── */
+.curriculumStats {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.curriculumStats span {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.moduleItem {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: border-color var(--transition-fast);
+}
+
+.moduleItem:hover {
+  border-color: var(--border-glass-hover);
+}
+
+.moduleHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  cursor: pointer;
+  width: 100%;
+  background: none;
+  border: none;
+  color: inherit;
+  text-align: left;
+  transition: background var(--transition-fast);
+}
+
+.moduleHeader:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.moduleLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.moduleNumber {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.moduleTitle {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.moduleRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lessonCount {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.chevron {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  transition: transform var(--transition-base);
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.lessonsList {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+}
+
+.lessonsListOpen {
+  max-height: 600px;
+}
+
+.lessonItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px 12px 66px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background var(--transition-fast);
+}
+
+.lessonItem:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.lessonLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lessonIcon {
+  font-size: 0.85rem;
+  opacity: 0.6;
+}
+
+.lessonTitle {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.lessonDuration {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ─── Instructor Section ─── */
+.instructorCard {
+  display: flex;
+  gap: 24px;
+  padding: 28px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+}
+
+.instructorCardAvatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(99, 102, 241, 0.4);
+  flex-shrink: 0;
+}
+
+.instructorCardInfo h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.instructorCardInfo .label {
+  font-size: 0.8rem;
+  color: var(--accent-blue);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.instructorCardInfo p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* ─── Right Column — Price Card ─── */
+.rightColumn {
+  position: relative;
+}
+
+.priceCard {
+  position: sticky;
+  top: 100px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-glass);
+}
+
+.priceCardThumb {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  margin-bottom: 24px;
+}
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.discountPrice {
+  font-family: var(--font-heading);
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.originalPrice {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.discountPercent {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent-green);
+  background: rgba(16, 185, 129, 0.12);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+}
+
+.priceNote {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.buyBtn {
+  width: 100%;
+  padding: 14px 28px;
+  background: var(--gradient-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+  margin-bottom: 12px;
+}
+
+.buyBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.5);
+}
+
+.wishlistBtn {
+  width: 100%;
+  padding: 12px 28px;
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-glass-hover);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.wishlistBtn:hover {
+  background: var(--bg-glass);
+  border-color: var(--accent-rose);
+  color: var(--accent-rose);
+}
+
+.priceDivider {
+  border: none;
+  height: 1px;
+  background: var(--border-glass);
+  margin: 24px 0;
+}
+
+.courseFeatures {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.courseFeatureItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.courseFeatureItem .label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.courseFeatureItem .value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ─── Description Section ─── */
+.descriptionSection {
+  padding-top: 16px;
+}
+
+.descriptionSection h2 {
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.descriptionText {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.8;
+  white-space: pre-line;
+}
+
+/* ─── Not Found ─── */
+.notFound {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  gap: 16px;
+}
+
+.notFoundIcon {
+  font-size: 4rem;
+}
+
+.notFoundBtn {
+  margin-top: 12px;
+  padding: 12px 28px;
+  background: var(--gradient-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  text-decoration: none;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 1024px) {
+  .content {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .priceCard {
+    position: static;
+  }
+
+  .rightColumn {
+    order: -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: 40px 16px 60px;
+  }
+
+  .heroTitle {
+    font-size: 1.6rem;
+  }
+
+  .heroDescription {
+    font-size: 1rem;
+  }
+
+  .heroMeta {
+    gap: 16px;
+  }
+
+  .featuresGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .instructorCard {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .lessonItem {
+    padding-left: 40px;
+  }
+
+  .content {
+    padding: 0 16px 60px;
+  }
+}

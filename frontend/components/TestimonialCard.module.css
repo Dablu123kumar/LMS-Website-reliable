@@ -1,0 +1,67 @@
+.card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  min-width: 340px;
+  max-width: 400px;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-glass-hover);
+  transform: translateY(-4px);
+}
+
+.stars {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 16px;
+}
+
+.starFull {
+  color: var(--accent-amber);
+  font-size: 1rem;
+}
+
+.starEmpty {
+  color: var(--text-muted);
+  opacity: 0.3;
+  font-size: 1rem;
+}
+
+.quote {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin-bottom: 20px;
+  font-style: italic;
+}
+
+.author {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-glass);
+}
+
+.name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.role {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}

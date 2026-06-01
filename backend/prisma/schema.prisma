@@ -1,0 +1,204 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// ─── Enums are not supported in SQLite, so we use String with comments ───
+
+model GeneralUser {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  phone        String?
+  avatarUrl    String?
+  role         String   @default("USER") // USER | ADMIN
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  lmsCredentials LmsCredential[]
+  enrollments    Enrollment[]
+  payments       Payment[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model LmsCredential {
+  id              String   @id @default(uuid())
+  generalUserId   String
+  lmsUsername      String   @unique
+  lmsPasswordHash String
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  lastLogin       DateTime?
+
+  generalUser GeneralUser  @relation(fields: [generalUserId], references: [id], onDelete: Cascade)
+  enrollments Enrollment[]
+
+  @@index([generalUserId])
+  @@index([lmsUsername])
+}
+
+model Category {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  slug        String  @unique
+  description String?
+  iconUrl     String?
+  sortOrder   Int     @default(0)
+  isActive    Boolean @default(true)
+
+  courses Course[]
+
+  @@index([slug])
+  @@index([isActive])
+}
+
+model Course {
+  id               String   @id @default(uuid())
+  categoryId       String
+  title            String
+  slug             String   @unique
+  description      String
+  shortDescription String?
+  price            Float
+  discountPrice    Float?
+  thumbnailUrl     String?
+  previewVideoUrl  String?
+  difficultyLevel  String   @default("BEGINNER") // BEGINNER | INTERMEDIATE | ADVANCED
+  durationHours    Int      @default(0)
+  instructorName   String
+  instructorBio    String?
+  instructorAvatar String?
+  syllabus         String?  // JSON string
+  features         String?  // JSON string
+  isPublished      Boolean  @default(true)
+  status           String   @default("APPROVED") // PENDING | APPROVED | REJECTED
+  enrollmentCount  Int      @default(0)
+  ratingAvg        Float    @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  category    Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  enrollments Enrollment[]
+  liveClasses LiveClass[]
+  recordings  Recording[]
+  payments    Payment[]
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([isPublished])
+  @@index([difficultyLevel])
+  @@index([price])
+}
+
+model Enrollment {
+  id              String   @id @default(uuid())
+  generalUserId   String
+  courseId         String
+  lmsCredentialId String
+  paymentId       String?
+  paymentStatus   String   @default("COMPLETED") // PENDING | COMPLETED | FAILED
+  amountPaid      Float    @default(0)
+  enrolledAt      DateTime @default(now())
+  progressPercent Float    @default(0)
+
+  generalUser   GeneralUser   @relation(fields: [generalUserId], references: [id], onDelete: Cascade)
+  course        Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lmsCredential LmsCredential @relation(fields: [lmsCredentialId], references: [id], onDelete: Cascade)
+  notifications Notification[]
+
+  @@unique([generalUserId, courseId])
+  @@index([generalUserId])
+  @@index([courseId])
+  @@index([lmsCredentialId])
+}
+
+model LiveClass {
+  id               String   @id @default(uuid())
+  courseId          String
+  title            String
+  description      String?
+  scheduledAt      DateTime
+  endedAt          DateTime?
+  meetingUrl       String?
+  status           String   @default("SCHEDULED") // SCHEDULED | LIVE | COMPLETED
+  notificationSent Boolean  @default(false)
+
+  course        Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  recordings    Recording[]
+  notifications Notification[]
+
+  @@index([courseId])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+model Recording {
+  id              String   @id @default(uuid())
+  courseId         String
+  liveClassId     String?
+  title           String
+  description     String?
+  videoUrl        String
+  thumbnailUrl    String?
+  durationSeconds Int      @default(0)
+  status          String   @default("READY") // PROCESSING | READY
+  sortOrder       Int      @default(0)
+  uploadedAt      DateTime @default(now())
+
+  course    Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  liveClass LiveClass? @relation(fields: [liveClassId], references: [id], onDelete: SetNull)
+
+  @@index([courseId])
+  @@index([liveClassId])
+  @@index([status])
+}
+
+model Notification {
+  id           String   @id @default(uuid())
+  liveClassId  String?
+  enrollmentId String?
+  userId       String
+  type         String   // LIVE_REMINDER | LIVE_STARTED | RECORDING_UPLOADED | ANNOUNCEMENT
+  title        String
+  message      String
+  isRead       Boolean  @default(false)
+  sentAt       DateTime @default(now())
+
+  liveClass  LiveClass?  @relation(fields: [liveClassId], references: [id], onDelete: SetNull)
+  enrollment Enrollment? @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([type])
+  @@index([sentAt])
+}
+
+model Payment {
+  id               String   @id @default(uuid())
+  generalUserId    String
+  courseId          String
+  gateway          String   @default("MANUAL") // RAZORPAY | STRIPE | MANUAL
+  gatewayOrderId   String?
+  gatewayPaymentId String?
+  status           String   @default("PENDING") // PENDING | SUCCESS | FAILED | REFUNDED
+  amount           Float
+  currency         String   @default("INR")
+  gatewayResponse  String?  // JSON string
+  createdAt        DateTime @default(now())
+
+  generalUser GeneralUser @relation(fields: [generalUserId], references: [id], onDelete: Cascade)
+  course      Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([generalUserId])
+  @@index([courseId])
+  @@index([status])
+  @@index([gatewayOrderId])
+}

@@ -1,0 +1,245 @@
+/* ─── Notifications Page ─── */
+
+.page {
+  animation: fadeIn 0.5s ease;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.pageTitle {
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.markAllBtn {
+  padding: 8px 20px;
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.markAllBtn:hover {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-glass-hover);
+  color: var(--text-primary);
+}
+
+/* ─── Tabs ─── */
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  margin-bottom: 24px;
+  width: fit-content;
+}
+
+.tab {
+  padding: 9px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tab:hover {
+  color: var(--text-primary);
+}
+
+.tabActive {
+  background: var(--gradient-primary);
+  color: #fff;
+}
+
+.tabCount {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  margin-left: 4px;
+}
+
+/* ─── Notification List ─── */
+.notifList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notifItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 18px 20px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.notifItem:hover {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-glass-hover);
+}
+
+.notifItemUnread {
+  border-left: 3px solid var(--accent-blue);
+  background: rgba(99, 102, 241, 0.04);
+}
+
+.notifIconWrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.notifIconLive {
+  background: rgba(244, 63, 94, 0.12);
+}
+
+.notifIconRecording {
+  background: rgba(139, 92, 246, 0.12);
+}
+
+.notifIconAnnouncement {
+  background: rgba(6, 182, 212, 0.12);
+}
+
+.notifIconProgress {
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.notifIconSystem {
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.notifIconAchievement {
+  background: rgba(99, 102, 241, 0.12);
+}
+
+.notifIconReminder {
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.notifIconUpdate {
+  background: rgba(6, 182, 212, 0.12);
+}
+
+.notifContent {
+  flex: 1;
+}
+
+.notifTitle {
+  font-size: 0.92rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.notifMessage {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.notifMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.notifTime {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.unreadDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent-blue);
+  flex-shrink: 0;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* ─── Empty State ─── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 3.5rem;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.emptyTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.emptyText {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .notifItem {
+    flex-direction: row;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  .notifMeta {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .tabs {
+    width: 100%;
+  }
+
+  .tab {
+    flex: 1;
+    text-align: center;
+  }
+}

@@ -1,0 +1,48 @@
+.card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glass);
+  border-bottom: 3px solid var(--cat-color, var(--accent-blue));
+  border-radius: var(--radius-lg);
+  padding: 32px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.card:hover {
+  transform: scale(1.05) translateY(-4px);
+  background: var(--bg-glass-hover);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25), 0 0 20px color-mix(in srgb, var(--cat-color) 20%, transparent);
+}
+
+.icon {
+  font-size: 2.8rem;
+  margin-bottom: 16px;
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.card:hover .icon {
+  transform: scale(1.15);
+}
+
+.name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.count {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--cat-color, var(--accent-blue));
+}

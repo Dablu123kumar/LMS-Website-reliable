@@ -1,0 +1,46 @@
+{
+  "name": "lms-platform-backend",
+  "version": "1.0.0",
+  "description": "Express.js API for LMS Platform with dual JWT authentication",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "seed": "node prisma/seed.js",
+    "prisma:generate": "npx prisma generate",
+    "prisma:push": "npx prisma db push",
+    "prisma:studio": "npx prisma studio"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
+  "keywords": [
+    "lms",
+    "express",
+    "prisma",
+    "jwt"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^6.8.2",
+    "bcryptjs": "^3.0.2",
+    "cloudinary": "^2.10.0",
+    "compression": "^1.8.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.2",
+    "nodemailer": "^6.10.1",
+    "razorpay": "^2.9.6",
+    "socket.io": "^4.8.1",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "prisma": "^6.8.2"
+  }
+}
