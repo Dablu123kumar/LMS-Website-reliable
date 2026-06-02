@@ -153,6 +153,33 @@ export function mapDBCourseToMock(dbCourse) {
 
   const categorySlug = dbCourse.category?.slug || dbCourse.categoryId || 'web-development';
 
+  // Fallbacks for seed images that don't exist locally
+  let thumbnailUrl = dbCourse.thumbnailUrl;
+  if (thumbnailUrl && (thumbnailUrl.startsWith('/thumbnails') || thumbnailUrl.startsWith('thumbnails'))) {
+    thumbnailUrl = categorySlug === 'web-development' 
+      ? 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=600&h=340&fit=crop'
+      : categorySlug === 'data-science'
+      ? 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=340&fit=crop'
+      : categorySlug === 'ai-machine-learning' || categorySlug === 'ai-ml'
+      ? 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=600&h=340&fit=crop'
+      : categorySlug === 'mobile-development'
+      ? 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=600&h=340&fit=crop'
+      : categorySlug === 'ui-ux-design'
+      ? 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600&h=340&fit=crop'
+      : 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=340&fit=crop';
+  } else {
+    thumbnailUrl = getFullUrl(thumbnailUrl) || 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=600&h=340&fit=crop';
+  }
+
+  let instructorAvatar = dbCourse.instructorAvatar;
+  if (instructorAvatar && (instructorAvatar.startsWith('/avatars') || instructorAvatar.startsWith('avatars'))) {
+    const seedNum = Math.abs(dbCourse.instructorName ? dbCourse.instructorName.charCodeAt(0) % 99 : 32);
+    const gender = ['Priya', 'Nidhi', 'Meera', 'Sneha', 'Aisha', 'Kavita'].some(n => dbCourse.instructorName?.includes(n)) ? 'women' : 'men';
+    instructorAvatar = `https://randomuser.me/api/portraits/${gender}/${seedNum}.jpg`;
+  } else {
+    instructorAvatar = getFullUrl(instructorAvatar) || 'https://randomuser.me/api/portraits/men/32.jpg';
+  }
+
   return {
     id: dbCourse.id,
     slug: dbCourse.slug,
@@ -162,11 +189,11 @@ export function mapDBCourseToMock(dbCourse) {
     description: dbCourse.description || '',
     price: dbCourse.price,
     discountPrice: dbCourse.discountPrice,
-    thumbnailUrl: getFullUrl(dbCourse.thumbnailUrl) || '/thumbnails/default.jpg',
+    thumbnailUrl,
     instructor: {
       name: dbCourse.instructorName || 'Expert Instructor',
       bio: dbCourse.instructorBio || '',
-      avatar: getFullUrl(dbCourse.instructorAvatar) || 'https://randomuser.me/api/portraits/men/32.jpg',
+      avatar: instructorAvatar,
     },
     difficultyLevel: diff,
     durationHours: dbCourse.durationHours || 20,

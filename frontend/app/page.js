@@ -9,6 +9,7 @@ import CategoryCard from '@/components/CategoryCard';
 import TestimonialCard from '@/components/TestimonialCard';
 import StatsCounter from '@/components/StatsCounter';
 import { courses, categories, testimonials, faqItems, stats } from '@/lib/data';
+import { api } from '@/lib/api';
 import styles from './page.module.css';
 
 /* ── Scroll Reveal Hook ── */
@@ -58,7 +59,24 @@ function FAQAccordion({ items }) {
 
 export default function HomePage() {
   const pageRef = useReveal();
-  const featuredCourses = courses.slice(0, 6);
+  const [coursesList, setCoursesList] = useState(courses);
+
+  useEffect(() => {
+    async function loadCourses() {
+      try {
+        const res = await api.getCourses();
+        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+          console.log('Backend courses data on Home Page:', res.data);
+          setCoursesList(res.data);
+        }
+      } catch (err) {
+        console.error('Failed to load courses on Home Page from backend:', err);
+      }
+    }
+    loadCourses();
+  }, []);
+
+  const featuredCourses = coursesList.slice(0, 6);
 
   const statItems = [
     { icon: '🎓', label: 'Students', end: stats.students },

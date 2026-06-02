@@ -50,8 +50,12 @@ app.use(
   })
 );
 
-// Security headers
-app.use(helmet());
+// Security headers - allow cross-origin resource loading for public static uploads
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  })
+);
 
 // Compression
 app.use(compression());
@@ -102,6 +106,28 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
   });
+});
+
+app.get('/api/health-db', async (req, res) => {
+  try {
+    const { PrismaClient } = require('@prisma/client');
+    const tempPrisma = new PrismaClient();
+    const categoriesCount = await tempPrisma.category.count();
+    await tempPrisma.$disconnect();
+    res.json({
+      success: true,
+      message: 'Database connection successful',
+      categoriesCount,
+      databaseUrlConfigured: !!process.env.DATABASE_URL,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Database connection failed',
+      error: error.message,
+      databaseUrlConfigured: !!process.env.DATABASE_URL,
+    });
+  }
 });
 
 // ─── API Routes ──────────────────────────────────────────────────────────────

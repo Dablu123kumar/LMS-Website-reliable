@@ -23,14 +23,17 @@ export default function CourseDetailPage() {
       try {
         const res = await api.getCourseBySlug(slug);
         if (res?.data) {
+          console.log('Backend course detail data:', res.data);
           setCourse(res.data);
         } else {
           const mock = mockCourses.find((c) => c.slug === slug);
+          console.log('Mock course detail data (fallback):', mock);
           setCourse(mock || null);
         }
       } catch (err) {
         console.error('API error, using mock data:', err);
         const mock = mockCourses.find((c) => c.slug === slug);
+        console.log('Mock course detail data (error fallback):', mock);
         setCourse(mock || null);
       } finally {
         setLoading(false);
@@ -155,9 +158,10 @@ export default function CourseDetailPage() {
 
   const category = mockCategories.find((c) => c.id === course.category) || { name: course.category, icon: '📚' };
   const totalLessons = course.syllabus ? course.syllabus.reduce((sum, m) => sum + (m.lessons?.length || 0), 0) : 0;
-  const discountPercent = course.discountPrice 
-    ? Math.round(((course.price - course.discountPrice) / course.price) * 100)
+  const rawPercent = typeof course.discountPrice === 'number' && course.price > 0
+    ? (course.discountPrice / course.price) * 100
     : 0;
+  const discountPercent = rawPercent % 1 === 0 ? rawPercent.toFixed(0) : rawPercent.toFixed(2);
 
   const toggleModule = (idx) => {
     setExpandedModules((prev) =>
@@ -190,7 +194,7 @@ export default function CourseDetailPage() {
         <section className={styles.hero}>
           <div
             className={styles.heroBg}
-            style={{ backgroundImage: `url(${course.thumbnailUrl})` }}
+            style={{ backgroundImage: `url(${getFullUrl(course.thumbnailUrl)})` }}
           />
           <div className={styles.heroOverlay} />
           <div className={styles.heroContent}>
@@ -214,7 +218,7 @@ export default function CourseDetailPage() {
             <div className={styles.heroMeta}>
               <div className={styles.instructorMeta}>
                 <img
-                  src={course.instructor.avatar}
+                  src={getFullUrl(course.instructor.avatar)}
                   alt={course.instructor.name}
                   className={styles.instructorAvatar}
                 />
@@ -328,7 +332,7 @@ export default function CourseDetailPage() {
               <h2>👨‍🏫 Your Instructor</h2>
               <div className={styles.instructorCard}>
                 <img
-                  src={course.instructor.avatar}
+                  src={getFullUrl(course.instructor.avatar)}
                   alt={course.instructor.name}
                   className={styles.instructorCardAvatar}
                 />
@@ -345,21 +349,29 @@ export default function CourseDetailPage() {
           <div className={styles.rightColumn}>
             <div className={styles.priceCard}>
               <img
-                src={course.thumbnailUrl}
+                src={getFullUrl(course.thumbnailUrl)}
                 alt={course.title}
                 className={styles.priceCardThumb}
               />
 
               <div className={styles.priceRow}>
-                <span className={styles.discountPrice}>
-                  ₹{course.discountPrice.toLocaleString()}
-                </span>
-                <span className={styles.originalPrice}>
-                  ₹{course.price.toLocaleString()}
-                </span>
-                <span className={styles.discountPercent}>
-                  {discountPercent}% OFF
-                </span>
+                {typeof course.discountPrice === 'number' && course.discountPrice < course.price ? (
+                  <>
+                    <span className={styles.originalPrice}>
+                      ₹{course.price.toLocaleString()}
+                    </span>
+                    <span className={styles.discountPrice}>
+                      ₹{(course.price - course.discountPrice).toLocaleString()}
+                    </span>
+                    <span className={styles.discountPercent}>
+                      {discountPercent}% OFF
+                    </span>
+                  </>
+                ) : (
+                  <span className={styles.discountPrice}>
+                    ₹{course.price.toLocaleString()}
+                  </span>
+                )}
               </div>
               <p className={styles.priceNote}>⏰ Limited time offer</p>
 

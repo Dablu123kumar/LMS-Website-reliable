@@ -66,10 +66,12 @@ export default function CourseCard({ course }) {
             <span className={styles.enrollCount}>({enrollmentCount.toLocaleString()})</span>
           </div>
           <div className={styles.priceBlock}>
-            {discountPrice < price && (
+            {typeof discountPrice === 'number' && discountPrice < price && (
               <span className={styles.originalPrice}>₹{price.toLocaleString()}</span>
             )}
-            <span className={styles.price}>₹{(discountPrice || price).toLocaleString()}</span>
+            <span className={styles.price}>
+              ₹{(typeof discountPrice === 'number' && discountPrice < price ? price - discountPrice : price).toLocaleString()}
+            </span>
           </div>
         </div>
       </div>

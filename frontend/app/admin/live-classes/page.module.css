@@ -624,3 +624,34 @@
   }
 }
 
+/* ─── File Uploads ─── */
+.uploadContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.fileInput {
+  display: none !important;
+}
+
+.uploadBtn {
+  display: inline-block;
+  padding: 10px 16px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass-hover);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.uploadBtn:hover {
+  border-color: #f59e0b;
+  background: var(--bg-glass-hover);
+}
+

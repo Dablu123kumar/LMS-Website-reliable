@@ -22,9 +22,11 @@ export default function CoursesPage() {
         const cRes = await api.getCourses();
         const catRes = await api.getCategories();
         if (cRes?.data && Array.isArray(cRes.data) && cRes.data.length > 0) {
+          console.log('Backend courses list data:', cRes.data);
           setCoursesList(cRes.data);
         }
         if (catRes?.data && Array.isArray(catRes.data) && catRes.data.length > 0) {
+          console.log('Backend categories list data:', catRes.data);
           // Adapt DB categories: { id, name, slug } -> { id: slug, name, icon, ... }
           const adaptedCats = catRes.data.map(cat => ({
             id: cat.slug,
@@ -78,10 +80,18 @@ export default function CoursesPage() {
         list.sort((a, b) => b.id.localeCompare(a.id));
         break;
       case 'price-low':
-        list.sort((a, b) => (a.discountPrice || a.price) - (b.discountPrice || b.price));
+        list.sort((a, b) => {
+          const aP = typeof a.discountPrice === 'number' && a.discountPrice < a.price ? a.price - a.discountPrice : a.price;
+          const bP = typeof b.discountPrice === 'number' && b.discountPrice < b.price ? b.price - b.discountPrice : b.price;
+          return aP - bP;
+        });
         break;
       case 'price-high':
-        list.sort((a, b) => (b.discountPrice || b.price) - (a.discountPrice || a.price));
+        list.sort((a, b) => {
+          const aP = typeof a.discountPrice === 'number' && a.discountPrice < a.price ? a.price - a.discountPrice : a.price;
+          const bP = typeof b.discountPrice === 'number' && b.discountPrice < b.price ? b.price - b.discountPrice : b.price;
+          return bP - aP;
+        });
         break;
       case 'rating':
         list.sort((a, b) => b.ratingAvg - a.ratingAvg);

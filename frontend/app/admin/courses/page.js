@@ -40,6 +40,8 @@ export default function AdminCoursesPage() {
   const [currentUser, setCurrentUser] = useState(null);
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingDemoVideo, setUploadingDemoVideo] = useState(false);
+
 
   async function handleFileUpload(field, setUploading) {
     return async (e) => {
@@ -77,6 +79,8 @@ export default function AdminCoursesPage() {
         api.adminGetCourses(),
         api.getCategories(),
       ]);
+      console.log('Backend admin courses list:', coursesRes?.data);
+      console.log('Backend admin categories list:', categoriesRes?.data);
       
       const user = getGeneralUser();
       let coursesData = coursesRes?.data || [];
@@ -363,7 +367,7 @@ export default function AdminCoursesPage() {
                       {course.discountPrice ? (
                         <>
                           <span className={styles.originalPrice}>₹{course.price}</span>
-                          <span className={styles.discountPrice}>₹{course.discountPrice}</span>
+                          <span className={styles.discountPrice}>₹{course.price - course.discountPrice}</span>
                         </>
                       ) : (
                         <span>₹{course.price}</span>
@@ -564,7 +568,22 @@ export default function AdminCoursesPage() {
 
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Demo Video URL</label>
-                  <input className={styles.formInput} value={form.previewVideoUrl} onChange={handleChange('previewVideoUrl')} placeholder="e.g. https://..." />
+                  <input className={styles.formInput} value={form.previewVideoUrl} onChange={handleChange('previewVideoUrl')} placeholder="e.g. https://..." style={{ marginBottom: '8px' }} />
+                  <div className={styles.uploadContainer}>
+                    <input 
+                      type="file" 
+                      accept="video/*" 
+                      id="video-upload" 
+                      className={styles.fileInput} 
+                      onChange={async (e) => {
+                        const handler = await handleFileUpload('previewVideoUrl', setUploadingDemoVideo);
+                        await handler(e);
+                      }} 
+                    />
+                    <label htmlFor="video-upload" className={styles.uploadBtn}>
+                      {uploadingDemoVideo ? 'Uploading... ⏳' : '📁 Upload Demo Video'}
+                    </label>
+                  </div>
                 </div>
               </div>
 

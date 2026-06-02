@@ -53,8 +53,10 @@ async function createOrder(req, res, next) {
       return errorResponse(res, 'You are already enrolled in this course.', 409);
     }
 
-    // Calculate amount (use discountPrice if available)
-    const amount = course.discountPrice || course.price;
+    // Calculate amount (discountPrice is the discount amount subtracted from the price)
+    const amount = typeof course.discountPrice === 'number' && course.discountPrice < course.price
+      ? (course.price - course.discountPrice)
+      : course.price;
 
     // ─── Razorpay Order ──────────────────────────────────────────────────
     if (razorpayInstance) {

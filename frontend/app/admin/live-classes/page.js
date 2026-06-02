@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { api, getGeneralUser } from '@/lib/api';
+import { api, getGeneralUser, getFullUrl } from '@/lib/api';
 import styles from './page.module.css';
 
 
@@ -45,6 +45,32 @@ export default function AdminLiveClassesPage() {
   const [meetingUrlInput, setMeetingUrlInput] = useState('');
 
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingRecordingVideo, setUploadingRecordingVideo] = useState(false);
+  const [uploadingRecordingThumbnail, setUploadingRecordingThumbnail] = useState(false);
+
+  async function handleFileUpload(field, setUploading) {
+    return async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      setUploading(true);
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await api.adminUploadFile(formData);
+        if (res?.success && res.url) {
+          setRecordingForm((prev) => ({ ...prev, [field]: res.url }));
+          showToast('File uploaded successfully!');
+        } else {
+          showToast('Failed to upload file.', 'error');
+        }
+      } catch (err) {
+        showToast(err.message || 'Error uploading file.', 'error');
+      } finally {
+        setUploading(false);
+      }
+    };
+  }
 
   useEffect(() => {
     loadData();
@@ -627,8 +653,24 @@ export default function AdminLiveClassesPage() {
                     value={recordingForm.videoUrl}
                     onChange={(e) => setRecordingForm({ ...recordingForm, videoUrl: e.target.value })}
                     placeholder="e.g. YouTube URL, Vimeo URL, MP4 link"
+                    style={{ marginBottom: '8px' }}
                     required
                   />
+                  <div className={styles.uploadContainer}>
+                    <input 
+                      type="file" 
+                      accept="video/*" 
+                      id="recording-video-upload" 
+                      className={styles.fileInput} 
+                      onChange={async (e) => {
+                        const handler = await handleFileUpload('videoUrl', setUploadingRecordingVideo);
+                        await handler(e);
+                      }} 
+                    />
+                    <label htmlFor="recording-video-upload" className={styles.uploadBtn}>
+                      {uploadingRecordingVideo ? 'Uploading... ⏳' : '📁 Upload Video File'}
+                    </label>
+                  </div>
                 </div>
 
                 <div className={styles.formGroup}>
@@ -638,7 +680,23 @@ export default function AdminLiveClassesPage() {
                     value={recordingForm.thumbnailUrl}
                     onChange={(e) => setRecordingForm({ ...recordingForm, thumbnailUrl: e.target.value })}
                     placeholder="Image cover URL"
+                    style={{ marginBottom: '8px' }}
                   />
+                  <div className={styles.uploadContainer}>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      id="recording-thumbnail-upload" 
+                      className={styles.fileInput} 
+                      onChange={async (e) => {
+                        const handler = await handleFileUpload('thumbnailUrl', setUploadingRecordingThumbnail);
+                        await handler(e);
+                      }} 
+                    />
+                    <label htmlFor="recording-thumbnail-upload" className={styles.uploadBtn}>
+                      {uploadingRecordingThumbnail ? 'Uploading... ⏳' : '📁 Upload Thumbnail'}
+                    </label>
+                  </div>
                 </div>
               </div>
 
