@@ -1,5 +1,11 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
+// Proactively clear legacy tokens from localStorage to secure existing sessions
+if (typeof window !== 'undefined') {
+  localStorage.removeItem('general_token');
+  localStorage.removeItem('lms_token');
+}
+
 export function getGeneralToken() {
   return null;
 }
