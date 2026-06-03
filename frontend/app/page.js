@@ -62,30 +62,37 @@ export default function HomePage() {
   const pageRef = useReveal();
   const router = useRouter();
   const [coursesList, setCoursesList] = useState(courses);
-  const [homeSearch, setHomeSearch] = useState('');
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (homeSearch.trim()) {
-      router.push(`/courses?search=${encodeURIComponent(homeSearch.trim())}`);
-    } else {
-      router.push('/courses');
-    }
-  };
+  const [categoriesList, setCategoriesList] = useState(categories);
 
   useEffect(() => {
-    async function loadCourses() {
+    async function loadData() {
       try {
-        const res = await api.getCourses();
-        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
-          console.log('Backend courses data on Home Page:', res.data);
-          setCoursesList(res.data);
+        const cRes = await api.getCourses();
+        const catRes = await api.getCategories();
+        if (cRes?.data && Array.isArray(cRes.data) && cRes.data.length > 0) {
+          console.log('Backend courses data on Home Page:', cRes.data);
+          setCoursesList(cRes.data);
+        }
+        if (catRes?.data && Array.isArray(catRes.data) && catRes.data.length > 0) {
+          console.log('Backend categories data on Home Page:', catRes.data);
+          const adaptedCats = catRes.data.map((cat) => {
+            const matchedMock = categories.find((mc) => mc.id === cat.slug);
+            return {
+              id: cat.slug,
+              name: cat.name,
+              description: cat.description || (matchedMock ? matchedMock.description : ''),
+              courseCount: cat.courseCount,
+              icon: matchedMock ? matchedMock.icon : '🌐',
+              color: matchedMock ? matchedMock.color : '#6366f1',
+            };
+          });
+          setCategoriesList(adaptedCats);
         }
       } catch (err) {
-        console.error('Failed to load courses on Home Page from backend:', err);
+        console.error('Failed to load home page data from backend:', err);
       }
     }
-    loadCourses();
+    loadData();
   }, []);
 
   const featuredCourses = coursesList.slice(0, 6);
@@ -127,20 +134,6 @@ export default function HomePage() {
             with industry experts. Learn at your pace, earn certificates, and accelerate your career.
           </p>
 
-          <div className={styles.heroSearchContainer}>
-            <form onSubmit={handleSearchSubmit} className={styles.heroSearchForm}>
-              <span className={styles.searchIcon}>🔍</span>
-              <input
-                type="text"
-                placeholder="What do you want to learn today? (e.g. React, Python, UI/UX...)"
-                value={homeSearch}
-                onChange={(e) => setHomeSearch(e.target.value)}
-                className={styles.heroSearchInput}
-              />
-              <button type="submit" className={styles.heroSearchButton}>Search</button>
-            </form>
-          </div>
-
           <div className={styles.heroCtas}>
             <Link href="/courses" className="btn btn-primary btn-lg">
               Explore Courses →
@@ -177,7 +170,7 @@ export default function HomePage() {
             </p>
           </div>
           <div className={`grid ${styles.categoriesGrid} reveal`}>
-            {categories.map((cat) => (
+            {categoriesList.map((cat) => (
               <CategoryCard key={cat.id} category={cat} />
             ))}
           </div>
