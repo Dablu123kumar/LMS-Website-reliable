@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import CourseCard from '@/components/CourseCard';
@@ -59,7 +60,18 @@ function FAQAccordion({ items }) {
 
 export default function HomePage() {
   const pageRef = useReveal();
+  const router = useRouter();
   const [coursesList, setCoursesList] = useState(courses);
+  const [homeSearch, setHomeSearch] = useState('');
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (homeSearch.trim()) {
+      router.push(`/courses?search=${encodeURIComponent(homeSearch.trim())}`);
+    } else {
+      router.push('/courses');
+    }
+  };
 
   useEffect(() => {
     async function loadCourses() {
@@ -114,6 +126,21 @@ export default function HomePage() {
             Master in-demand skills in Web Development, Data Science, AI, Cloud, and Design
             with industry experts. Learn at your pace, earn certificates, and accelerate your career.
           </p>
+
+          <div className={styles.heroSearchContainer}>
+            <form onSubmit={handleSearchSubmit} className={styles.heroSearchForm}>
+              <span className={styles.searchIcon}>🔍</span>
+              <input
+                type="text"
+                placeholder="What do you want to learn today? (e.g. React, Python, UI/UX...)"
+                value={homeSearch}
+                onChange={(e) => setHomeSearch(e.target.value)}
+                className={styles.heroSearchInput}
+              />
+              <button type="submit" className={styles.heroSearchButton}>Search</button>
+            </form>
+          </div>
+
           <div className={styles.heroCtas}>
             <Link href="/courses" className="btn btn-primary btn-lg">
               Explore Courses →

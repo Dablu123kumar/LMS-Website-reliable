@@ -1,3 +1,4 @@
+import Chatbot from '@/components/Chatbot';
 import './globals.css';
 
 export const metadata = {
@@ -19,7 +20,10 @@ export default function RootLayout({ children }) {
         />
         <meta name="theme-color" content="#0a0e27" />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Chatbot />
+      </body>
     </html>
   );
 }

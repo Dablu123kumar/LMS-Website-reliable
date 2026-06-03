@@ -17,6 +17,17 @@ export default function CoursesPage() {
   const [categoriesList, setCategoriesList] = useState(mockCategories);
 
   useEffect(() => {
+    // Read category and search queries from URL parameters
+    const params = new URLSearchParams(window.location.search);
+    const catParam = params.get('category');
+    const searchParam = params.get('search');
+    if (catParam) {
+      setSelectedCat(catParam);
+    }
+    if (searchParam) {
+      setSearch(searchParam);
+    }
+
     async function loadData() {
       try {
         const cRes = await api.getCourses();
@@ -63,7 +74,18 @@ export default function CoursesPage() {
 
     // Category
     if (selectedCat !== 'all') {
-      list = list.filter((c) => c.category === selectedCat);
+      list = list.filter((c) => {
+        if (typeof c.category === 'string') {
+          return c.category === selectedCat;
+        }
+        if (c.category && typeof c.category === 'object') {
+          return c.category.slug === selectedCat || c.category.id === selectedCat;
+        }
+        if (c.categoryId) {
+          return c.categoryId === selectedCat;
+        }
+        return false;
+      });
     }
 
     // Difficulty
