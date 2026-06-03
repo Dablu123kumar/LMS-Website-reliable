@@ -58,6 +58,9 @@
   --scrollbar-thumb: rgba(15, 23, 42, 0.1);
   --scrollbar-thumb-hover: rgba(15, 23, 42, 0.25);
   --selection-bg: rgba(79, 70, 229, 0.15);
+
+  --bg-sidebar: rgba(255, 255, 255, 0.95);
+  --bg-topbar: rgba(255, 255, 255, 0.85);
 }
 
 /* ─── Dark Theme Overrides ─── */
@@ -94,6 +97,9 @@
   --scrollbar-thumb: rgba(255, 255, 255, 0.1);
   --scrollbar-thumb-hover: rgba(255, 255, 255, 0.2);
   --selection-bg: rgba(99, 102, 241, 0.3);
+
+  --bg-sidebar: rgba(17, 22, 56, 0.95);
+  --bg-topbar: rgba(17, 22, 56, 0.85);
 }
 
 /* ─── CSS Reset ─── */

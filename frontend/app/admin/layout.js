@@ -29,13 +29,27 @@ export default function AdminLayout({ children }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
+  const [theme, setTheme] = useState('light');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const val = localStorage.getItem('admin_sidebar_collapsed') === 'true';
       setSidebarCollapsed(val);
+      const activeTheme = document.documentElement.getAttribute('data-theme') || 'light';
+      setTheme(activeTheme);
     }
   }, []);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(nextTheme);
+    localStorage.setItem('theme', nextTheme);
+    document.documentElement.setAttribute('data-theme', nextTheme);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) {
+      meta.setAttribute('content', nextTheme === 'light' ? '#f8fafc' : '#0a0e27');
+    }
+  };
 
   const toggleSidebarCollapse = () => {
     const nextState = !sidebarCollapsed;
@@ -173,6 +187,14 @@ export default function AdminLayout({ children }) {
           </div>
 
           <div className={styles.topBarRight}>
+            <button
+              onClick={toggleTheme}
+              className={styles.themeToggleBtn}
+              title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+              aria-label="Toggle Theme"
+            >
+              {theme === 'light' ? '🌙' : '☀️'}
+            </button>
             <div className={styles.adminInfo}>
               <span className={styles.adminName}>{user?.firstName || 'Admin'}</span>
               <span className={styles.adminRole}>Administrator</span>
