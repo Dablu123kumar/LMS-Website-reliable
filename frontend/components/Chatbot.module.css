@@ -46,8 +46,8 @@
   height: 14px;
   border-radius: 50%;
   background: #10b981;
-  border: 2px solid #0a0e27;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+  border: 2px solid var(--bg-primary);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
 }
 
 .closeIcon {
@@ -65,16 +65,16 @@
 /* Chat Panel */
 .chatPanel {
   position: fixed;
-  bottom: 105px;
+  bottom: 30px;
   right: 30px;
   width: 380px;
   height: 600px;
-  background: rgba(10, 14, 39, 0.85);
+  background: var(--bg-card);
   backdrop-filter: blur(25px);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-xl);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 30px rgba(99, 102, 241, 0.05);
-  z-index: 999;
+  box-shadow: var(--shadow-elevated), 0 0 30px rgba(79, 70, 229, 0.05);
+  z-index: 2001;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -93,7 +93,7 @@
 /* Header */
 .header {
   padding: 16px 20px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.08) 0%, rgba(124, 58, 237, 0.08) 100%);
   border-bottom: 1px solid var(--border-glass);
   display: flex;
   align-items: center;
@@ -102,14 +102,34 @@
 
 .advisorAvatar {
   font-size: 1.8rem;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(79, 70, 229, 0.05);
   width: 44px;
   height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(79, 70, 229, 0.15);
+}
+
+.closeBtn {
+  margin-left: auto;
+  font-size: 1.8rem;
+  color: var(--text-muted);
+  line-height: 1;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeBtn:hover {
+  color: var(--text-primary);
+  transform: scale(1.15);
 }
 
 .advisorInfo h4 {
@@ -196,7 +216,7 @@
 }
 
 .botWrapper .messageBubble {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-glass);
   border: 1px solid var(--border-glass);
   color: var(--text-primary);
   border-top-left-radius: 4px;
@@ -327,7 +347,7 @@
 
 .quickReplyBtn {
   flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-glass);
   border: 1px solid var(--border-glass);
   border-radius: 9999px;
   padding: 8px 14px;
@@ -339,8 +359,8 @@
 }
 
 .quickReplyBtn:hover {
-  background: rgba(99, 102, 241, 0.15);
-  border-color: rgba(99, 102, 241, 0.4);
+  background: rgba(79, 70, 229, 0.08);
+  border-color: rgba(79, 70, 229, 0.2);
   transform: translateY(-1px);
 }
 
@@ -350,13 +370,13 @@
   display: flex;
   gap: 8px;
   border-top: 1px solid var(--border-glass);
-  background: rgba(10, 14, 39, 0.95);
+  background: var(--bg-secondary);
   flex-shrink: 0;
 }
 
 .inputField {
   flex: 1;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-glass);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-md);
   padding: 10px 16px;
@@ -368,7 +388,7 @@
 }
 
 .inputField:focus {
-  border-color: rgba(99, 102, 241, 0.5);
+  border-color: rgba(79, 70, 229, 0.4);
 }
 
 .sendButton {

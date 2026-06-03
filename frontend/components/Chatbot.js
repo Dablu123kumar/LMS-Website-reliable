@@ -155,20 +155,18 @@ export default function Chatbot() {
   return (
     <>
       {/* Floating Chat Bubble */}
-      <button 
-        className={`${styles.floatingBubble} ${isOpen ? styles.bubbleActive : ''}`} 
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label="Open advisor chat"
-      >
-        {isOpen ? (
-          <span className={styles.closeIcon}>×</span>
-        ) : (
+      {!isOpen && (
+        <button 
+          className={styles.floatingBubble} 
+          onClick={() => setIsOpen(true)}
+          aria-label="Open advisor chat"
+        >
           <div className={styles.bubbleInner}>
             <span className={styles.chatIcon}>💬</span>
             <span className={styles.onlineBadge} />
           </div>
-        )}
-      </button>
+        </button>
+      )}
 
       {/* Chat Window Panel */}
       <div className={`${styles.chatPanel} ${isOpen ? styles.panelOpen : ''}`}>
@@ -179,6 +177,14 @@ export default function Chatbot() {
             <h4>LearnHub Advisor</h4>
             <span className={styles.status}><span className={styles.greenPulse} /> Online</span>
           </div>
+          <button 
+            type="button" 
+            className={styles.closeBtn} 
+            onClick={() => setIsOpen(false)}
+            aria-label="Close Advisor Chat"
+          >
+            &times;
+          </button>
         </div>
 
         {/* Messages List */}

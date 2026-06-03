@@ -18,7 +18,7 @@ export default function RootLayout({ children }) {
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap"
           rel="stylesheet"
         />
-        <meta name="theme-color" content="#0a0e27" />
+        <meta name="theme-color" content="#f8fafc" />
       </head>
       <body>
         {children}
