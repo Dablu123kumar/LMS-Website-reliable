@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import CourseCard from '@/components/CourseCard';
@@ -8,7 +9,8 @@ import { api } from '@/lib/api';
 import { courses as mockCourses, categories as mockCategories } from '@/lib/data';
 import styles from './page.module.css';
 
-export default function CoursesPage() {
+function CoursesContent() {
+  const searchParams = useSearchParams();
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState('all');
   const [difficulty, setDifficulty] = useState('all');
@@ -16,18 +18,16 @@ export default function CoursesPage() {
   const [coursesList, setCoursesList] = useState(mockCourses);
   const [categoriesList, setCategoriesList] = useState(mockCategories);
 
+  // Sync state with URL search params when they change
   useEffect(() => {
-    // Read category and search queries from URL parameters
-    const params = new URLSearchParams(window.location.search);
-    const catParam = params.get('category');
-    const searchParam = params.get('search');
-    if (catParam) {
-      setSelectedCat(catParam);
-    }
-    if (searchParam) {
-      setSearch(searchParam);
-    }
+    const catParam = searchParams.get('category');
+    const searchParam = searchParams.get('search');
+    
+    setSelectedCat(catParam || 'all');
+    setSearch(searchParam || '');
+  }, [searchParams]);
 
+  useEffect(() => {
     async function loadData() {
       try {
         const cRes = await api.getCourses();
@@ -228,5 +228,17 @@ export default function CoursesPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function CoursesPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: 'var(--bg-primary)', color: 'var(--text-muted)' }}>
+        Loading courses...
+      </div>
+    }>
+      <CoursesContent />
+    </Suspense>
   );
 }
