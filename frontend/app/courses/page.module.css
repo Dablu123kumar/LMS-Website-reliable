@@ -24,44 +24,7 @@
 .subtitle {
   color: var(--text-secondary);
   font-size: 1.05rem;
-  margin-bottom: 32px;
-}
-
-.searchWrapper {
-  position: relative;
-  max-width: 560px;
-  margin: 0 auto;
-}
-
-.searchIcon {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 1rem;
-  pointer-events: none;
-}
-
-.searchInput {
-  width: 100%;
-  padding: 14px 20px 14px 44px;
-  background: var(--bg-glass);
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-xl);
-  color: var(--text-primary);
-  font-size: 0.95rem;
-  outline: none;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(12px);
-}
-
-.searchInput:focus {
-  border-color: var(--accent-blue);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-}
-
-.searchInput::placeholder {
-  color: var(--text-muted);
+  margin-bottom: 0;
 }
 
 /* Main */

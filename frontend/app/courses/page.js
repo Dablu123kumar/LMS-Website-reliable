@@ -138,18 +138,6 @@ function CoursesContent() {
           <p className={styles.subtitle}>
             Discover {coursesList.length}+ courses designed to take your skills to the next level
           </p>
-
-          {/* Search bar */}
-          <div className={styles.searchWrapper}>
-            <span className={styles.searchIcon}>🔍</span>
-            <input
-              type="text"
-              placeholder="Search courses, topics, or instructors..."
-              className={styles.searchInput}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
         </div>
       </section>
 
