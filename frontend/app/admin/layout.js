@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getGeneralToken, getGeneralUser, setGeneralToken, setGeneralUser, api } from '@/lib/api';
+import { getGeneralUser, setGeneralToken, setGeneralUser, api } from '@/lib/api';
 import styles from './layout.module.css';
 
 const navItems = [
@@ -61,10 +61,9 @@ export default function AdminLayout({ children }) {
       return;
     }
 
-    const token = getGeneralToken();
     const storedUser = getGeneralUser();
 
-    if (!token || !storedUser || (storedUser.role !== 'ADMIN' && storedUser.role !== 'INSTRUCTOR')) {
+    if (!storedUser || (storedUser.role !== 'ADMIN' && storedUser.role !== 'INSTRUCTOR')) {
       router.push('/admin/login');
       return;
     }
