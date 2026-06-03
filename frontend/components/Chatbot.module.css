@@ -69,6 +69,7 @@
   right: 30px;
   width: 380px;
   height: 600px;
+  max-height: calc(100vh - 60px);
   background: var(--bg-card);
   backdrop-filter: blur(25px);
   border: 1px solid var(--border-glass);
@@ -423,8 +424,9 @@
   .chatPanel {
     width: calc(100% - 40px);
     right: 20px;
-    bottom: 95px;
+    bottom: 20px;
     height: 520px;
+    max-height: calc(100vh - 40px);
   }
   .floatingBubble {
     bottom: 20px;
