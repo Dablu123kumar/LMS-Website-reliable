@@ -61,6 +61,8 @@
 
   --bg-sidebar: rgba(255, 255, 255, 0.95);
   --bg-topbar: rgba(255, 255, 255, 0.85);
+  --hero-bg-filter: blur(30px) brightness(1.1) opacity(0.4);
+  --hero-overlay: linear-gradient(to bottom, rgba(248, 250, 252, 0.5) 0%, rgba(248, 250, 252, 0.95) 100%);
 }
 
 /* ─── Dark Theme Overrides ─── */
@@ -100,6 +102,8 @@
 
   --bg-sidebar: rgba(17, 22, 56, 0.95);
   --bg-topbar: rgba(17, 22, 56, 0.85);
+  --hero-bg-filter: blur(30px) brightness(0.35);
+  --hero-overlay: linear-gradient(to bottom, rgba(10, 14, 39, 0.6) 0%, rgba(10, 14, 39, 0.95) 100%);
 }
 
 /* ─── CSS Reset ─── */
