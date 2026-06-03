@@ -12,13 +12,30 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [search, setSearch] = useState('');
+  const [theme, setTheme] = useState('light');
 
   useEffect(() => {
     setUser(getGeneralUser());
     const handleScroll = () => setScrolled(window.scrollY > 30);
     window.addEventListener('scroll', handleScroll);
+
+    // Sync theme state with the html attribute set by the head blocking script
+    const activeTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    setTheme(activeTheme);
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(nextTheme);
+    localStorage.setItem('theme', nextTheme);
+    document.documentElement.setAttribute('data-theme', nextTheme);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) {
+      meta.setAttribute('content', nextTheme === 'light' ? '#f8fafc' : '#0a0e27');
+    }
+  };
 
   useEffect(() => {
     if (menuOpen) {
@@ -79,6 +96,15 @@ export default function Navbar() {
 
         {/* Right side */}
         <div className={styles.navRight}>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className={styles.themeToggleBtn}
+            aria-label="Toggle Theme"
+            title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+          >
+            {theme === 'light' ? '🌙' : '☀️'}
+          </button>
           <Link href="/lms/login" className={styles.dashboardLink}>
             🎓 LMS Dashboard
           </Link>
@@ -136,6 +162,17 @@ export default function Navbar() {
           <Link href="/lms/login" className={styles.mobileDashboard} onClick={() => setMenuOpen(false)}>
             🎓 LMS Dashboard
           </Link>
+          <button
+            type="button"
+            onClick={() => {
+              toggleTheme();
+              setMenuOpen(false);
+            }}
+            className={styles.mobileThemeToggle}
+          >
+            <span>Appearance</span>
+            <span>{theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}</span>
+          </button>
           <div className={styles.mobileAuthBtns}>
             <Link href="/auth/login" className="btn btn-secondary" onClick={() => setMenuOpen(false)} style={{ flex: 1 }}>
               Log In

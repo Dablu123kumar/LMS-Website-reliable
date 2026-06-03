@@ -19,6 +19,22 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
         />
         <meta name="theme-color" content="#f8fafc" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('theme') || 'light';
+                  document.documentElement.setAttribute('data-theme', theme);
+                  var meta = document.querySelector('meta[name="theme-color"]');
+                  if (meta) {
+                    meta.setAttribute('content', theme === 'light' ? '#f8fafc' : '#0a0e27');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
       </head>
       <body>
         {children}
