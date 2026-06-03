@@ -64,7 +64,12 @@ export default function LmsLayout({ children }) {
 
   const closeSidebar = () => setSidebarOpen(false);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await api.lmsLogout();
+    } catch (err) {
+      console.error('Failed to log out LMS user on server:', err);
+    }
     setLmsToken(null);
     setLmsUser(null);
     router.push('/lms/login');

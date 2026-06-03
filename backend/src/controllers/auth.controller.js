@@ -3,6 +3,20 @@ const jwt = require('jsonwebtoken');
 const prisma = require('../utils/prismaClient');
 const { successResponse, errorResponse } = require('../utils/apiResponse');
 
+const COOKIE_OPTIONS_GENERAL = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+};
+
+const COOKIE_OPTIONS_LMS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  maxAge: 24 * 60 * 60 * 1000, // 24 hours
+};
+
 /**
  * POST /api/v1/auth/signup
  * General user registration
@@ -50,6 +64,8 @@ async function signup(req, res, next) {
       { expiresIn: '7d' }
     );
 
+    res.cookie('general_token', token, COOKIE_OPTIONS_GENERAL);
+
     return successResponse(res, 'Account created successfully.', { user, token }, 201);
   } catch (error) {
     next(error);
@@ -84,6 +100,8 @@ async function login(req, res, next) {
       process.env.GENERAL_JWT_SECRET,
       { expiresIn: '7d' }
     );
+
+    res.cookie('general_token', token, COOKIE_OPTIONS_GENERAL);
 
     return successResponse(res, 'Login successful.', {
       user: {
@@ -157,6 +175,8 @@ async function lmsLogin(req, res, next) {
       { expiresIn: '24h' }
     );
 
+    res.cookie('lms_token', token, COOKIE_OPTIONS_LMS);
+
     return successResponse(res, 'LMS login successful.', {
       user: {
         lmsUsername: credential.lmsUsername,
@@ -168,6 +188,32 @@ async function lmsLogin(req, res, next) {
       },
       token,
     });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * POST /api/v1/auth/logout
+ * General user logout
+ */
+async function logout(req, res, next) {
+  try {
+    res.clearCookie('general_token', COOKIE_OPTIONS_GENERAL);
+    return successResponse(res, 'Logged out successfully from general site.');
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * POST /api/v1/auth/lms/logout
+ * LMS user logout
+ */
+async function lmsLogout(req, res, next) {
+  try {
+    res.clearCookie('lms_token', COOKIE_OPTIONS_LMS);
+    return successResponse(res, 'Logged out successfully from LMS dashboard.');
   } catch (error) {
     next(error);
   }
@@ -263,4 +309,4 @@ async function getLmsMe(req, res, next) {
   }
 }
 
-module.exports = { signup, login, lmsLogin, getMe, getLmsMe };
+module.exports = { signup, login, lmsLogin, getMe, getLmsMe, logout, lmsLogout };

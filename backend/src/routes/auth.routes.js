@@ -26,9 +26,11 @@ const lmsLoginSchema = {
 // General auth routes
 router.post('/signup', validate(signupSchema), authController.signup);
 router.post('/login', validate(loginSchema), authController.login);
+router.post('/logout', authController.logout);
 
 // LMS auth routes (separate JWT system)
 router.post('/lms/login', validate(lmsLoginSchema), authController.lmsLogin);
+router.post('/lms/logout', authController.lmsLogout);
 
 // Protected routes
 router.get('/me', generalAuth, authController.getMe);

@@ -4,6 +4,7 @@ const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
 const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
@@ -59,6 +60,9 @@ app.use(
 
 // Compression
 app.use(compression());
+
+// Cookie parsing
+app.use(cookieParser());
 
 // Request logging
 app.use(morgan('dev'));

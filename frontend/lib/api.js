@@ -1,19 +1,12 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
 export function getGeneralToken() {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('general_token');
-  }
   return null;
 }
 
 export function setGeneralToken(token) {
   if (typeof window !== 'undefined') {
-    if (token) {
-      localStorage.setItem('general_token', token);
-    } else {
-      localStorage.removeItem('general_token');
-    }
+    localStorage.removeItem('general_token');
   }
 }
 
@@ -36,19 +29,12 @@ export function setGeneralUser(user) {
 }
 
 export function getLmsToken() {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('lms_token');
-  }
   return null;
 }
 
 export function setLmsToken(token) {
   if (typeof window !== 'undefined') {
-    if (token) {
-      localStorage.setItem('lms_token', token);
-    } else {
-      localStorage.removeItem('lms_token');
-    }
+    localStorage.removeItem('lms_token');
   }
 }
 
@@ -81,6 +67,7 @@ async function request(path, options = {}, isLms = false) {
 
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
+    credentials: 'include',
     headers,
   });
 
@@ -105,7 +92,6 @@ async function request(path, options = {}, isLms = false) {
   }
 
   return data;
-
 }
 
 export function getFullUrl(url) {
@@ -211,6 +197,7 @@ export const api = {
   // Public & General Auth
   signup: (body) => request('/auth/signup', { method: 'POST', body: JSON.stringify(body) }),
   login: (body) => request('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
+  logout: () => request('/auth/logout', { method: 'POST' }),
   getMe: () => request('/auth/me', { method: 'GET' }),
 
   // Courses
@@ -238,6 +225,7 @@ export const api = {
 
   // LMS Auth & Dashboard
   lmsLogin: (body) => request('/auth/lms/login', { method: 'POST', body: JSON.stringify(body) }),
+  lmsLogout: () => request('/auth/lms/logout', { method: 'POST' }, true),
   getLmsMe: () => request('/auth/lms/me', { method: 'GET' }, true),
   getMyCourses: () => request('/dashboard/my-courses', { method: 'GET' }, true),
   getCourseContent: (id) => request(`/dashboard/course/${id}`, { method: 'GET' }, true),

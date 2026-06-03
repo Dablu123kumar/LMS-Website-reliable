@@ -10,12 +10,13 @@ const { errorResponse } = require('../utils/apiResponse');
 async function lmsAuth(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
+    
+    // Read from HttpOnly cookie first, fall back to Authorization header
+    const token = req.cookies?.lms_token || (authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null);
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!token) {
       return errorResponse(res, 'Access denied. No LMS token provided.', 401);
     }
-
-    const token = authHeader.split(' ')[1];
 
     const decoded = jwt.verify(token, process.env.LMS_JWT_SECRET);
 

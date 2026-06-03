@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getGeneralUser, setGeneralUser, setGeneralToken } from '@/lib/api';
+import { getGeneralUser, setGeneralUser, setGeneralToken, api } from '@/lib/api';
 import styles from './Navbar.module.css';
 
 export default function Navbar() {
@@ -46,7 +46,12 @@ export default function Navbar() {
     return () => { document.body.style.overflow = ''; };
   }, [menuOpen]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await api.logout();
+    } catch (err) {
+      console.error('Failed to log out on server:', err);
+    }
     setGeneralToken(null);
     setGeneralUser(null);
     setUser(null);

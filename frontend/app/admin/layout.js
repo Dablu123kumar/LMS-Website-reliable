@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getGeneralToken, getGeneralUser, setGeneralToken, setGeneralUser } from '@/lib/api';
+import { getGeneralToken, getGeneralUser, setGeneralToken, setGeneralUser, api } from '@/lib/api';
 import styles from './layout.module.css';
 
 const navItems = [
@@ -90,7 +90,12 @@ export default function AdminLayout({ children }) {
   const getPageTitle = () => pageTitles[pathname] || 'Admin Panel';
   const closeSidebar = () => setSidebarOpen(false);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await api.logout();
+    } catch (err) {
+      console.error('Failed to log out admin/instructor on server:', err);
+    }
     setGeneralToken(null);
     setGeneralUser(null);
     router.push('/admin/login');
