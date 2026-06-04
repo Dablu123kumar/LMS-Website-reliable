@@ -12,12 +12,21 @@ export default function Chatbot() {
       id: 'welcome',
       sender: 'bot',
       text: 'Hello! 👋 I am your LearnHub Career & Course Advisor. How can I help you shape your learning journey today?',
-      timestamp: new Date(),
+      timestamp: null,
     },
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
+
+  // Sync welcome message timestamp on mount to prevent SSR/hydration mismatch
+  useEffect(() => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === 'welcome' ? { ...msg, timestamp: new Date() } : msg
+      )
+    );
+  }, []);
 
   // Scroll to bottom whenever messages or typing state changes
   useEffect(() => {
@@ -160,6 +169,7 @@ export default function Chatbot() {
           className={styles.floatingBubble} 
           onClick={() => setIsOpen(true)}
           aria-label="Open advisor chat"
+          suppressHydrationWarning
         >
           <div className={styles.bubbleInner}>
             <span className={styles.chatIcon}>💬</span>
@@ -182,6 +192,7 @@ export default function Chatbot() {
             className={styles.closeBtn} 
             onClick={() => setIsOpen(false)}
             aria-label="Close Advisor Chat"
+            suppressHydrationWarning
           >
             &times;
           </button>
@@ -216,9 +227,11 @@ export default function Chatbot() {
                   </div>
                 )}
               </div>
-              <span className={styles.timestamp}>
-                {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
+              {msg.timestamp && (
+                <span className={styles.timestamp}>
+                  {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              )}
             </div>
           ))}
 
@@ -242,6 +255,7 @@ export default function Chatbot() {
               key={idx} 
               onClick={() => handleSend(qr.query)}
               className={styles.quickReplyBtn}
+              suppressHydrationWarning
             >
               {qr.text}
             </button>
@@ -262,8 +276,9 @@ export default function Chatbot() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             className={styles.inputField}
+            suppressHydrationWarning
           />
-          <button type="submit" className={styles.sendButton} disabled={!input.trim()}>
+          <button type="submit" className={styles.sendButton} disabled={!input.trim()} suppressHydrationWarning>
             ➔
           </button>
         </form>

@@ -362,3 +362,152 @@
   background: var(--bg-glass-hover);
   border-color: var(--border-glass-hover);
 }
+
+/* Mega Dropdown Styling */
+.dropdownParent {
+  position: static;
+}
+
+.hasDropdown {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.caret {
+  font-size: 0.7rem;
+  transition: transform 0.2s ease;
+  display: inline-block;
+}
+
+.dropdownParent:hover .caret {
+  transform: rotate(180deg);
+}
+
+.megaDropdown {
+  position: fixed;
+  top: 72px; /* aligns with navbar-height */
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  width: 1100px;
+  max-width: 95vw;
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-elevated), 0 20px 40px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dropdownParent:hover .megaDropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: all;
+}
+
+.dropdownInner {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.3fr 260px;
+  gap: 28px;
+  text-align: left;
+}
+
+.dropdownCol h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border-glass);
+}
+
+.dropdownSubLink {
+  display: block;
+  padding: 6px 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.02);
+}
+
+[data-theme='dark'] .dropdownSubLink {
+  border-bottom-color: rgba(255, 255, 255, 0.02);
+}
+
+.dropdownSubLink:hover {
+  color: var(--accent-blue);
+  padding-left: 4px;
+}
+
+.promoCol {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.promoCard {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.promoCard:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent-blue);
+  background: var(--bg-glass-hover);
+}
+
+.promoLabel {
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: var(--accent-blue);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+  display: block;
+}
+
+.promoCard h5 {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.promoCard p {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+
+.seeAllBtn {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  color: #ffffff;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  margin-top: auto;
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+}
+
+.seeAllBtn:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+}
