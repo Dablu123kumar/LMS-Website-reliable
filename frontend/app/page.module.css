@@ -28,7 +28,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--gradient-hero);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: #ffffff;
+}
+
+.slide::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0.65) 100%);
+  z-index: 2;
 }
 
 .slideActive {
@@ -44,6 +55,7 @@
   right: -200px;
   border-radius: 50%;
   pointer-events: none;
+  z-index: 2;
 }
 
 .slideContent {
@@ -64,8 +76,10 @@
   align-items: center;
   gap: 8px;
   padding: 8px 20px;
-  background: var(--bg-glass);
-  border: 1px solid var(--border-glass);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 9999px;
   font-size: 0.85rem;
   font-weight: 600;
@@ -77,35 +91,34 @@
 .slideTitle {
   font-size: clamp(2.2rem, 5.5vw, 3.5rem);
   font-weight: 800;
-  color: var(--text-primary);
+  color: #ffffff !important;
   line-height: 1.15;
   margin-bottom: 20px;
-  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-[data-theme='dark'] .slideTitle {
-  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 .slideSubtitle {
   font-size: clamp(1rem, 2vw, 1.25rem);
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.9) !important;
   line-height: 1.6;
   max-width: 720px;
   margin: 0 auto 28px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .slideTech {
   font-size: 0.95rem;
-  color: var(--text-muted);
-  background: var(--bg-secondary);
+  color: rgba(255, 255, 255, 0.8) !important;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   padding: 8px 18px;
   border-radius: 8px;
-  border: 1px solid var(--border-glass);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .slideTech span {
-  color: var(--text-secondary);
+  color: #ffffff !important;
   font-weight: 600;
 }
 
@@ -1051,19 +1064,40 @@
 .marketingCard {
   border-radius: var(--radius-xl);
   padding: 48px;
-  color: #ffffff;
   display: flex;
   flex-direction: column;
   position: relative;
   overflow: hidden;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-card);
   transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-glass);
+  color: var(--text-secondary);
+}
+
+.marketingCardOffline {
+  background: linear-gradient(135deg, #f5f3ff 0%, #fae8ff 100%);
+}
+
+[data-theme='dark'] .marketingCardOffline {
+  background: linear-gradient(135deg, #1e1b4b 0%, #31102f 100%);
+}
+
+.marketingCardOnline {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+}
+
+[data-theme='dark'] .marketingCardOnline {
+  background: linear-gradient(135deg, #0b0f19 0%, #1e293b 100%);
 }
 
 .marketingCard:hover {
   transform: translateY(-4px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-elevated);
+}
+
+[data-theme='dark'] .marketingCard {
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: #ffffff;
 }
 
 .marketingIcon {
@@ -1076,26 +1110,58 @@
   font-size: 1.5rem;
   font-weight: 800;
   margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .marketingCard h3 {
+  color: #ffffff;
 }
 
 .marketingCard p {
-  color: #cbd5e1;
+  color: var(--text-secondary);
   font-size: 0.95rem;
   line-height: 1.6;
   margin-bottom: 28px;
   flex: 1;
 }
 
+[data-theme='dark'] .marketingCard p {
+  color: #cbd5e1;
+}
+
 .marketingBadge {
   align-self: flex-start;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
   font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   padding: 6px 16px;
   border-radius: 50px;
+  transition: all var(--transition-base);
+}
+
+.marketingCardOffline .marketingBadge {
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  color: #7c3aed;
+}
+
+[data-theme='dark'] .marketingCardOffline .marketingBadge {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.marketingCardOnline .marketingBadge {
+  background: rgba(2, 132, 199, 0.08);
+  border: 1px solid rgba(2, 132, 199, 0.2);
+  color: #0284c7;
+}
+
+[data-theme='dark'] .marketingCardOnline .marketingBadge {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
 }
 
 /* ─── Bottom Form + FAQ split ─── */

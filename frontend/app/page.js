@@ -74,8 +74,7 @@ export default function HomePage() {
   const [bottomSubmitting, setBottomSubmitting] = useState(false);
   const [bottomSuccess, setBottomSuccess] = useState(false);
 
-  // Search input on hero
-  const [heroSearch, setHeroSearch] = useState('');
+
 
   // Auto-play interval for hero slider
   useEffect(() => {
@@ -146,13 +145,7 @@ export default function HomePage() {
     setTimeout(() => setBottomSuccess(false), 5000);
   };
 
-  const handleHeroSearchSubmit = (e) => {
-    e.preventDefault();
-    if (heroSearch.trim()) {
-      router.push(`/courses?search=${encodeURIComponent(heroSearch.trim())}`);
-      setHeroSearch('');
-    }
-  };
+
 
   const heroSlides = [
     {
@@ -161,7 +154,8 @@ export default function HomePage() {
       badge: '💻 Hands-on coding track',
       accentColor: '#6366f1',
       glow: 'rgba(99, 102, 241, 0.15)',
-      tech: 'React • Next.js • Node.js • PostgreSQL • Prisma'
+      tech: 'React • Next.js • Node.js • PostgreSQL • Prisma',
+      bgImage: '/web_dev_banner.png'
     },
     {
       title: 'UI/UX & Creative Graphic Designing',
@@ -169,7 +163,8 @@ export default function HomePage() {
       badge: '🎨 Professional design bootcamp',
       accentColor: '#f43f5e',
       glow: 'rgba(244, 63, 94, 0.15)',
-      tech: 'Figma • UI Kits • Prototyping • Photoshop • Illustrator'
+      tech: 'Figma • UI Kits • Prototyping • Photoshop • Illustrator',
+      bgImage: '/design_banner.png'
     },
     {
       title: 'AI, Machine Learning & Data Analytics',
@@ -177,7 +172,8 @@ export default function HomePage() {
       badge: '🤖 Future-ready intelligence path',
       accentColor: '#f59e0b',
       glow: 'rgba(245, 158, 11, 0.15)',
-      tech: 'Python • LangChain • OpenAI API • PyTorch • Pandas'
+      tech: 'Python • LangChain • OpenAI API • PyTorch • Pandas',
+      bgImage: '/ai_ml_banner.png'
     }
   ];
 
@@ -192,6 +188,7 @@ export default function HomePage() {
             <div
               key={idx}
               className={`${styles.slide} ${idx === currentSlide ? styles.slideActive : ''}`}
+              style={{ backgroundImage: `url(${slide.bgImage})` }}
             >
               <div
                 className={styles.slideGlow}
@@ -227,23 +224,7 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* Hero Search overlay */}
-        <div className={styles.heroSearchOverlay}>
-          <form onSubmit={handleHeroSearchSubmit} className={styles.heroSearchForm}>
-            <span className={styles.heroSearchIcon}>🔍</span>
-            <input
-              type="text"
-              placeholder="Search for your favorite tech course..."
-              value={heroSearch}
-              onChange={(e) => setHeroSearch(e.target.value)}
-              className={styles.heroSearchInput}
-              suppressHydrationWarning
-            />
-            <button type="submit" className={styles.heroSearchButton} suppressHydrationWarning>
-              Search
-            </button>
-          </form>
-        </div>
+
       </section>
 
       {/* ── SECTION 3: ANNOUNCEMENT RIBBON ── */}
@@ -762,13 +743,13 @@ export default function HomePage() {
       <section className={`section ${styles.marketingBannersSection} reveal`}>
         <div className="container">
           <div className={styles.marketingGrid}>
-            <div className={styles.marketingCard} style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #31102f 100%)' }}>
+            <div className={`${styles.marketingCard} ${styles.marketingCardOffline}`}>
               <span className={styles.marketingIcon}>🏫</span>
               <h3>Classroom Training (Offline)</h3>
               <p>Attend interactive modules directly at our Sector 34, Chandigarh center. Experience 1-on-1 developer desks, physical computer labs, and face-to-face mentorship.</p>
               <div className={styles.marketingBadge}>Interactive Classroom batches</div>
             </div>
-            <div className={styles.marketingCard} style={{ background: 'linear-gradient(135deg, #0b0f19 0%, #1e293b 100%)' }}>
+            <div className={`${styles.marketingCard} ${styles.marketingCardOnline}`}>
               <span className={styles.marketingIcon}>💻</span>
               <h3>Virtual Classroom (Online Live)</h3>
               <p>Learn from anywhere in India with our live stream classes. Connect with mentors via real-time screen shares, interact on collaborative Slack chats, and access recorded libraries.</p>
