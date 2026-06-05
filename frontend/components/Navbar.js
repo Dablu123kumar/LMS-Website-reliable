@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getGeneralUser, setGeneralUser, setGeneralToken, api } from '@/lib/api';
+import { getGeneralUser, setGeneralUser, setGeneralToken, getLmsUser, setLmsUser, setLmsToken, api } from '@/lib/api';
 import styles from './Navbar.module.css';
 
 export default function Navbar() {
@@ -13,9 +13,10 @@ export default function Navbar() {
   const [user, setUser] = useState(null);
   const [search, setSearch] = useState('');
   const [theme, setTheme] = useState('light');
+  const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
-    setUser(getGeneralUser());
+    setUser(getGeneralUser() || getLmsUser());
     const handleScroll = () => setScrolled(window.scrollY > 30);
     window.addEventListener('scroll', handleScroll);
 
@@ -25,6 +26,18 @@ export default function Navbar() {
 
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (!e.target.closest(`.${styles.profileMenuContainer}`)) {
+        setProfileOpen(false);
+      }
+    };
+    if (profileOpen) {
+      document.addEventListener('click', handleOutsideClick);
+    }
+    return () => document.removeEventListener('click', handleOutsideClick);
+  }, [profileOpen]);
 
   const toggleTheme = () => {
     const nextTheme = theme === 'light' ? 'dark' : 'light';
@@ -52,9 +65,17 @@ export default function Navbar() {
     } catch (err) {
       console.error('Failed to log out on server:', err);
     }
+    try {
+      await api.lmsLogout();
+    } catch (err) {
+      console.error('Failed to log out of LMS on server:', err);
+    }
     setGeneralToken(null);
     setGeneralUser(null);
+    setLmsToken(null);
+    setLmsUser(null);
     setUser(null);
+    router.push('/');
     router.refresh();
   };
 
@@ -218,26 +239,72 @@ export default function Navbar() {
           >
             {theme === 'light' ? '🌙' : '☀️'}
           </button>
-          <Link href="/lms/login" className={styles.dashboardLink}>
-            🎓 LMS Dashboard
-          </Link>
-          {user ? (
-            <>
-              <span className={styles.welcomeText}>Hi, {user.firstName}!</span>
-              <button onClick={handleLogout} className={`btn btn-ghost ${styles.loginBtn}`}>
-                Log Out
-              </button>
-            </>
-          ) : (
-            <>
-              <Link href="/auth/login" className={`btn btn-ghost ${styles.loginBtn}`}>
-                Log In
-              </Link>
-              <Link href="/auth/signup" className={`btn btn-primary btn-sm ${styles.signupBtn}`}>
-                Sign Up Free
-              </Link>
-            </>
-          )}
+
+          {/* Profile Menu Dropdown */}
+          <div className={styles.profileMenuContainer}>
+            <button
+              onClick={() => setProfileOpen(!profileOpen)}
+              className={styles.profileAvatarBtn}
+              aria-label="User Profile"
+              title="Profile menu"
+              suppressHydrationWarning
+            >
+              {user ? (
+                <div className={styles.avatarCircleInitials} suppressHydrationWarning>
+                  {user.firstName ? user.firstName[0].toUpperCase() : ''}
+                  {user.lastName ? user.lastName[0].toUpperCase() : ''}
+                </div>
+              ) : (
+                <div className={styles.avatarPlaceholder}>👤</div>
+              )}
+            </button>
+
+            {profileOpen && (
+              <div className={styles.profileDropdown} suppressHydrationWarning>
+                {user && (
+                  <div className={styles.dropdownHeader}>
+                    <div className={styles.dropdownUserInitials}>
+                      {user.firstName ? user.firstName[0].toUpperCase() : ''}
+                      {user.lastName ? user.lastName[0].toUpperCase() : ''}
+                    </div>
+                    <div className={styles.dropdownUserInfo}>
+                      <span className={styles.dropdownUserName}>{user.firstName} {user.lastName}</span>
+                      <span className={styles.dropdownUserEmail}>{user.email}</span>
+                    </div>
+                  </div>
+                )}
+                <div className={styles.dropdownLinks}>
+                  {user ? (
+                    <>
+                      <Link href="/lms/login" className={styles.dropdownLink} onClick={() => setProfileOpen(false)}>
+                        🎓 LMS Dashboard
+                      </Link>
+                      <Link 
+                        href={typeof window !== 'undefined' && !!localStorage.getItem('lms_user') ? "/lms/profile" : "/profile"} 
+                        className={styles.dropdownLink} 
+                        onClick={() => setProfileOpen(false)}
+                      >
+                        👤 My Profile
+                      </Link>
+                      <hr className={styles.dropdownDivider} />
+                      <button onClick={() => { handleLogout(); setProfileOpen(false); }} className={styles.logoutBtn}>
+                        🚪 Log Out
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link href="/auth/login" className={styles.dropdownLink} onClick={() => setProfileOpen(false)}>
+                        🔑 Log In
+                      </Link>
+                      <Link href="/auth/signup" className={styles.dropdownLink} onClick={() => setProfileOpen(false)}>
+                        📝 Sign Up
+                      </Link>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Mobile hamburger */}
@@ -273,9 +340,6 @@ export default function Navbar() {
           <Link href="/courses" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>Courses</Link>
           <Link href="/#categories" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>Categories</Link>
           <hr className="divider" />
-          <Link href="/lms/login" className={styles.mobileDashboard} onClick={() => setMenuOpen(false)}>
-            🎓 LMS Dashboard
-          </Link>
           <button
             type="button"
             onClick={() => {
@@ -284,18 +348,42 @@ export default function Navbar() {
             }}
             className={styles.mobileThemeToggle}
             suppressHydrationWarning
+            style={{ marginBottom: '16px' }}
           >
             <span>Appearance</span>
             <span>{theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}</span>
           </button>
-          <div className={styles.mobileAuthBtns}>
-            <Link href="/auth/login" className="btn btn-secondary" onClick={() => setMenuOpen(false)} style={{ flex: 1 }}>
-              Log In
-            </Link>
-            <Link href="/auth/signup" className="btn btn-primary" onClick={() => setMenuOpen(false)} style={{ flex: 1 }}>
-              Sign Up
-            </Link>
-          </div>
+
+          {user ? (
+            <>
+              <div className={styles.mobileUserInfo} suppressHydrationWarning>
+                <span className={styles.mobileWelcome}>Hi, {user.firstName}!</span>
+                <span className={styles.mobileEmail}>{user.email}</span>
+              </div>
+              <Link 
+                href={typeof window !== 'undefined' && !!localStorage.getItem('lms_user') ? "/lms/profile" : "/profile"} 
+                className={styles.mobileLink} 
+                onClick={() => setMenuOpen(false)}
+              >
+                👤 My Profile
+              </Link>
+              <Link href="/lms/login" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>
+                🎓 LMS Dashboard
+              </Link>
+              <button onClick={() => { handleLogout(); setMenuOpen(false); }} className={styles.mobileLogoutBtn}>
+                🚪 Log Out
+              </button>
+            </>
+          ) : (
+            <div className={styles.mobileAuthBtns}>
+              <Link href="/auth/login" className="btn btn-secondary" onClick={() => setMenuOpen(false)} style={{ flex: 1 }}>
+                Log In
+              </Link>
+              <Link href="/auth/signup" className="btn btn-primary" onClick={() => setMenuOpen(false)} style={{ flex: 1 }}>
+                Sign Up
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </nav>

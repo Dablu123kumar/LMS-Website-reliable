@@ -13,6 +13,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
   const [updatingPassword, setUpdatingPassword] = useState(false);
+  const [activeTab, setActiveTab] = useState('profile'); // 'profile' or 'security'
   
   const [profile, setProfile] = useState({
     firstName: '',
@@ -237,186 +238,208 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* Edit Profile */}
-      <div className={styles.sectionCard}>
-        <h2 className={styles.sectionTitle}>✏️ Edit Profile</h2>
-        <div className={styles.formGrid}>
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>First Name</label>
-            <input
-              type="text"
-              className={styles.formInput}
-              value={profile.firstName}
-              onChange={handleProfileChange('firstName')}
-              placeholder="First Name"
-              disabled={savingProfile}
-            />
-          </div>
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Last Name</label>
-            <input
-              type="text"
-              className={styles.formInput}
-              value={profile.lastName}
-              onChange={handleProfileChange('lastName')}
-              placeholder="Last Name"
-              disabled={savingProfile}
-            />
-          </div>
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Phone Number</label>
-            <input
-              type="tel"
-              className={styles.formInput}
-              value={profile.phone}
-              onChange={handleProfileChange('phone')}
-              placeholder="Phone Number"
-              disabled={savingProfile}
-            />
-          </div>
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Email Address</label>
-            <input
-              type="email"
-              className={styles.formInput}
-              value={profile.email}
-              disabled
-              style={{ opacity: 0.6, cursor: 'not-allowed' }}
-            />
-          </div>
-        </div>
-
-        <button 
-          className={styles.saveBtn} 
-          onClick={handleSaveProfile}
-          disabled={savingProfile}
-        >
-          {savingProfile ? 'Saving Changes...' : 'Save Changes'}
-        </button>
-      </div>
-
-      {/* Change Password */}
-      <div className={styles.sectionCard}>
-        <h2 className={styles.sectionTitle}>🔒 Change Password</h2>
-        <div className={styles.formGrid}>
-          <div className={`${styles.formGroup} ${styles.formGroupFull}`}>
-            <label className={styles.formLabel}>Current Password</label>
-            <input
-              type="password"
-              className={styles.formInput}
-              placeholder="Enter current password"
-              value={passwords.current}
-              onChange={handlePasswordChange('current')}
-              disabled={updatingPassword}
-            />
-          </div>
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>New Password</label>
-            <input
-              type="password"
-              className={styles.formInput}
-              placeholder="Enter new password"
-              value={passwords.newPass}
-              onChange={handlePasswordChange('newPass')}
-              disabled={updatingPassword}
-            />
-          </div>
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Confirm New Password</label>
-            <input
-              type="password"
-              className={styles.formInput}
-              placeholder="Confirm new password"
-              value={passwords.confirm}
-              onChange={handlePasswordChange('confirm')}
-              disabled={updatingPassword}
-            />
-          </div>
-        </div>
-        <button 
-          className={styles.saveBtn} 
-          onClick={handleUpdatePassword}
-          disabled={updatingPassword}
-        >
-          {updatingPassword ? 'Updating Password...' : 'Update Password'}
-        </button>
-      </div>
-
-      {/* Enrollment History */}
-      <div className={styles.sectionCard}>
-        <h2 className={styles.sectionTitle}>📚 Enrollment History</h2>
-        <div className={styles.tableWrapper}>
-          {enrollments.length > 0 ? (
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Course Name</th>
-                  <th>Enrolled Date</th>
-                  <th>Progress</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {enrollments.map((course) => (
-                  <tr key={course.courseId}>
-                    <td style={{ fontWeight: 600 }}>{course.courseTitle}</td>
-                    <td>
-                      {new Date(course.enrolledAt).toLocaleDateString('en-IN', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
-                    </td>
-                    <td>
-                      <div className={styles.progressCell}>
-                        <div className={styles.progressBarSmall}>
-                          <div
-                            className={styles.progressFillSmall}
-                            style={{ width: `${course.progressPercent}%` }}
-                          />
-                        </div>
-                        <span className={styles.progressText}>
-                          {course.progressPercent}%
-                        </span>
-                      </div>
-                    </td>
-                    <td>
-                      <span
-                        className={`${styles.statusCell} ${
-                          course.progressPercent >= 100
-                            ? styles.statusCompleted
-                            : styles.statusInProgress
-                        }`}
-                      >
-                        {course.progressPercent >= 100 ? '✅ Completed' : '🔄 In Progress'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <div style={{ padding: '20px 0', textAlign: 'center', color: 'var(--text-muted)' }}>
-              No enrollment history found.
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Danger Zone */}
-      <div className={styles.dangerCard}>
-        <h2 className={styles.dangerTitle}>⚠️ Danger Zone</h2>
-        <p className={styles.dangerText}>
-          Once you deactivate your account, all your progress, certificates, and enrolled
-          courses will be permanently deleted. This action cannot be undone.
-        </p>
+      {/* Tabs Navigation */}
+      <div className={styles.tabNav}>
         <button
-          className={styles.dangerBtn}
-          onClick={handleDeactivate}
+          className={`${styles.tabBtn} ${activeTab === 'profile' ? styles.tabBtnActive : ''}`}
+          onClick={() => setActiveTab('profile')}
         >
-          Deactivate Account
+          👤 Profile Details
+        </button>
+        <button
+          className={`${styles.tabBtn} ${activeTab === 'security' ? styles.tabBtnActive : ''}`}
+          onClick={() => setActiveTab('security')}
+        >
+          🔒 Security & Password
         </button>
       </div>
+
+      {activeTab === 'profile' ? (
+        <>
+          {/* Edit Profile */}
+          <div className={styles.sectionCard}>
+            <h2 className={styles.sectionTitle}>✏️ Edit Profile</h2>
+            <div className={styles.formGrid}>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>First Name</label>
+                <input
+                  type="text"
+                  className={styles.formInput}
+                  value={profile.firstName}
+                  onChange={handleProfileChange('firstName')}
+                  placeholder="First Name"
+                  disabled={savingProfile}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Last Name</label>
+                <input
+                  type="text"
+                  className={styles.formInput}
+                  value={profile.lastName}
+                  onChange={handleProfileChange('lastName')}
+                  placeholder="Last Name"
+                  disabled={savingProfile}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Phone Number</label>
+                <input
+                  type="tel"
+                  className={styles.formInput}
+                  value={profile.phone}
+                  onChange={handleProfileChange('phone')}
+                  placeholder="Phone Number"
+                  disabled={savingProfile}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Email Address</label>
+                <input
+                  type="email"
+                  className={styles.formInput}
+                  value={profile.email}
+                  disabled
+                  style={{ opacity: 0.6, cursor: 'not-allowed' }}
+                />
+              </div>
+            </div>
+
+            <button 
+              className={styles.saveBtn} 
+              onClick={handleSaveProfile}
+              disabled={savingProfile}
+            >
+              {savingProfile ? 'Saving Changes...' : 'Save Changes'}
+            </button>
+          </div>
+
+          {/* Enrollment History */}
+          <div className={styles.sectionCard}>
+            <h2 className={styles.sectionTitle}>📚 Enrollment History</h2>
+            <div className={styles.tableWrapper}>
+              {enrollments.length > 0 ? (
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Course Name</th>
+                      <th>Enrolled Date</th>
+                      <th>Progress</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {enrollments.map((course) => (
+                      <tr key={course.courseId}>
+                        <td style={{ fontWeight: 600 }}>{course.courseTitle}</td>
+                        <td>
+                          {new Date(course.enrolledAt).toLocaleDateString('en-IN', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
+                        </td>
+                        <td>
+                          <div className={styles.progressCell}>
+                            <div className={styles.progressBarSmall}>
+                              <div
+                                className={styles.progressFillSmall}
+                                style={{ width: `${course.progressPercent}%` }}
+                              />
+                            </div>
+                            <span className={styles.progressText}>
+                              {course.progressPercent}%
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          <span
+                            className={`${styles.statusCell} ${
+                              course.progressPercent >= 100
+                                ? styles.statusCompleted
+                                : styles.statusInProgress
+                            }`}
+                          >
+                            {course.progressPercent >= 100 ? '✅ Completed' : '🔄 In Progress'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div style={{ padding: '20px 0', textAlign: 'center', color: 'var(--text-muted)' }}>
+                  No enrollment history found.
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Change Password */}
+          <div className={styles.sectionCard}>
+            <h2 className={styles.sectionTitle}>🔒 Change Password</h2>
+            <div className={styles.formGrid}>
+              <div className={`${styles.formGroup} ${styles.formGroupFull}`}>
+                <label className={styles.formLabel}>Current Password</label>
+                <input
+                  type="password"
+                  className={styles.formInput}
+                  placeholder="Enter current password"
+                  value={passwords.current}
+                  onChange={handlePasswordChange('current')}
+                  disabled={updatingPassword}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>New Password</label>
+                <input
+                  type="password"
+                  className={styles.formInput}
+                  placeholder="Enter new password"
+                  value={passwords.newPass}
+                  onChange={handlePasswordChange('newPass')}
+                  disabled={updatingPassword}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Confirm New Password</label>
+                <input
+                  type="password"
+                  className={styles.formInput}
+                  placeholder="Confirm new password"
+                  value={passwords.confirm}
+                  onChange={handlePasswordChange('confirm')}
+                  disabled={updatingPassword}
+                />
+              </div>
+            </div>
+            <button 
+              className={styles.saveBtn} 
+              onClick={handleUpdatePassword}
+              disabled={updatingPassword}
+            >
+              {updatingPassword ? 'Updating Password...' : 'Update Password'}
+            </button>
+          </div>
+
+          {/* Danger Zone */}
+          <div className={styles.dangerCard}>
+            <h2 className={styles.dangerTitle}>⚠️ Danger Zone</h2>
+            <p className={styles.dangerText}>
+              Once you deactivate your account, all your progress, certificates, and enrolled
+              courses will be permanently deleted. This action cannot be undone.
+            </p>
+            <button
+              className={styles.dangerBtn}
+              onClick={handleDeactivate}
+            >
+              Deactivate Account
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

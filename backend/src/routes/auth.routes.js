@@ -35,5 +35,7 @@ router.post('/lms/logout', authController.lmsLogout);
 // Protected routes
 router.get('/me', generalAuth, authController.getMe);
 router.get('/lms/me', lmsAuth, authController.getLmsMe);
+router.put('/profile', generalAuth, authController.updateGeneralProfile);
+router.put('/password', generalAuth, authController.changeGeneralPassword);
 
 module.exports = router;

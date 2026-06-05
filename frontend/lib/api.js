@@ -205,6 +205,8 @@ export const api = {
   login: (body) => request('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
   logout: () => request('/auth/logout', { method: 'POST' }),
   getMe: () => request('/auth/me', { method: 'GET' }),
+  updateGeneralProfile: (body) => request('/auth/profile', { method: 'PUT', body: JSON.stringify(body) }),
+  updateGeneralPassword: (body) => request('/auth/password', { method: 'PUT', body: JSON.stringify(body) }),
 
   // Courses
   getCourses: async () => {

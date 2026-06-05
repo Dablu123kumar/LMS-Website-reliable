@@ -309,4 +309,77 @@ async function getLmsMe(req, res, next) {
   }
 }
 
-module.exports = { signup, login, lmsLogin, getMe, getLmsMe, logout, lmsLogout };
+/**
+ * PUT /api/v1/auth/profile
+ * Update general user profile
+ */
+async function updateGeneralProfile(req, res, next) {
+  try {
+    const { firstName, lastName, phone } = req.body;
+    
+    if (!firstName?.trim() || !lastName?.trim()) {
+      return errorResponse(res, 'First name and last name are required.', 400);
+    }
+    
+    const updatedUser = await prisma.generalUser.update({
+      where: { id: req.user.id },
+      data: {
+        firstName,
+        lastName,
+        phone: phone || null,
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        role: true,
+      },
+    });
+    
+    return successResponse(res, 'Profile updated successfully.', updatedUser);
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * PUT /api/v1/auth/password
+ * Change general user password
+ */
+async function changeGeneralPassword(req, res, next) {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    
+    if (!currentPassword || !newPassword) {
+      return errorResponse(res, 'Both current password and new password are required.', 400);
+    }
+    
+    const user = await prisma.generalUser.findUnique({
+      where: { id: req.user.id },
+    });
+    
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isPasswordValid) {
+      return errorResponse(res, 'Incorrect current password.', 401);
+    }
+    
+    if (newPassword.length < 6) {
+      return errorResponse(res, 'New password must be at least 6 characters.', 400);
+    }
+    
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    
+    await prisma.generalUser.update({
+      where: { id: req.user.id },
+      data: { passwordHash },
+    });
+    
+    return successResponse(res, 'Password changed successfully.');
+  } catch (error) {
+    next(error);
+  }
+}
+
+module.exports = { signup, login, lmsLogin, getMe, getLmsMe, logout, lmsLogout, updateGeneralProfile, changeGeneralPassword };
