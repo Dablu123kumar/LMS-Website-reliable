@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getGeneralUser, setGeneralUser, setGeneralToken, getLmsUser, setLmsUser, setLmsToken, api } from '@/lib/api';
@@ -12,8 +12,11 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [search, setSearch] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
   const [theme, setTheme] = useState('light');
   const [profileOpen, setProfileOpen] = useState(false);
+  const searchInputRef = useRef(null);
+
 
   useEffect(() => {
     setUser(getGeneralUser() || getLmsUser());
@@ -79,11 +82,45 @@ export default function Navbar() {
     router.refresh();
   };
 
+  useEffect(() => {
+    if (searchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [searchOpen]);
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (searchOpen && !e.target.closest(`.${styles.navSearch}`)) {
+        if (!search.trim()) {
+          setSearchOpen(false);
+        }
+      }
+    };
+    document.addEventListener('click', handleOutsideClick);
+    return () => document.removeEventListener('click', handleOutsideClick);
+  }, [searchOpen, search]);
+
+  const handleSearchIconClick = (e) => {
+    e.preventDefault();
+    if (!searchOpen) {
+      setSearchOpen(true);
+    } else {
+      if (search.trim()) {
+        router.push(`/courses?search=${encodeURIComponent(search.trim())}`);
+        setSearch('');
+        setSearchOpen(false);
+      } else {
+        setSearchOpen(false);
+      }
+    }
+  };
+
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (search.trim()) {
       router.push(`/courses?search=${encodeURIComponent(search.trim())}`);
       setSearch('');
+      setSearchOpen(false);
       setMenuOpen(false);
     }
   };
@@ -93,16 +130,13 @@ export default function Navbar() {
       <div className={`container ${styles.inner}`}>
         {/* Logo */}
         <Link href="/" className={styles.logo}>
-          <span className={styles.logoIcon}>📚</span>
-          <span className={styles.logoText}>
-            Learn<span className={styles.logoAccent}>Hub</span>
-          </span>
+          <img src="/logo_dark.png" className={`${styles.logoImg} ${styles.logoLight}`} alt="LearnHub Logo" />
+          <img src="/logo_light.png" className={`${styles.logoImg} ${styles.logoDark}`} alt="LearnHub Logo" />
         </Link>
+
 
         {/* Desktop nav links */}
         <div className={styles.navLinks}>
-          <Link href="/" className={styles.navLink}>Home</Link>
-          
           <div className={styles.dropdownParent}>
             <Link href="/courses" className={`${styles.navLink} ${styles.hasDropdown}`}>
               Courses <span className={styles.caret}>▾</span>
@@ -210,25 +244,37 @@ export default function Navbar() {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Desktop Search Bar */}
-        <div className={styles.navSearch}>
-          <form onSubmit={handleSearchSubmit} className={styles.navSearchForm}>
-            <span className={styles.navSearchIcon}>🔍</span>
-            <input
-              type="text"
-              placeholder="Search courses..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className={styles.navSearchInput}
-              suppressHydrationWarning
-            />
-          </form>
+          <Link href="/about" className={styles.navLink}>About Us</Link>
+          <Link href="/contact" className={styles.navLink}>Contact Us</Link>
         </div>
 
         {/* Right side */}
         <div className={styles.navRight}>
+          {/* Desktop Search Bar */}
+          <div className={`${styles.navSearch} ${searchOpen ? styles.navSearchExpanded : ''}`}>
+            <form onSubmit={handleSearchSubmit} className={styles.navSearchForm}>
+              <button
+                type="button"
+                onClick={handleSearchIconClick}
+                className={styles.navSearchIconBtn}
+                title="Search"
+                aria-label="Search"
+                suppressHydrationWarning
+              >
+                🔍
+              </button>
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Search courses..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className={`${styles.navSearchInput} ${searchOpen ? styles.inputVisible : ''}`}
+                suppressHydrationWarning
+              />
+            </form>
+          </div>
+
           <button
             type="button"
             onClick={toggleTheme}
@@ -279,6 +325,11 @@ export default function Navbar() {
                       <Link href="/lms/login" className={styles.dropdownLink} onClick={() => setProfileOpen(false)}>
                         🎓 LMS Dashboard
                       </Link>
+                      {(user.role === 'ADMIN' || user.role === 'INSTRUCTOR') && (
+                        <Link href="/admin/dashboard" className={styles.dropdownLink} onClick={() => setProfileOpen(false)}>
+                          🛠️ {user.role === 'ADMIN' ? 'Admin Dashboard' : 'Instructor Dashboard'}
+                        </Link>
+                      )}
                       <Link 
                         href={typeof window !== 'undefined' && !!localStorage.getItem('lms_user') ? "/lms/profile" : "/profile"} 
                         className={styles.dropdownLink} 
@@ -336,9 +387,10 @@ export default function Navbar() {
               />
             </form>
           </div>
-          <Link href="/" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>Home</Link>
           <Link href="/courses" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>Courses</Link>
           <Link href="/#categories" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>Categories</Link>
+          <Link href="/about" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>About Us</Link>
+          <Link href="/contact" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>Contact Us</Link>
           <hr className="divider" />
           <button
             type="button"
@@ -370,6 +422,11 @@ export default function Navbar() {
               <Link href="/lms/login" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>
                 🎓 LMS Dashboard
               </Link>
+              {(user.role === 'ADMIN' || user.role === 'INSTRUCTOR') && (
+                <Link href="/admin/dashboard" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>
+                  🛠️ {user.role === 'ADMIN' ? 'Admin Dashboard' : 'Instructor Dashboard'}
+                </Link>
+              )}
               <button onClick={() => { handleLogout(); setMenuOpen(false); }} className={styles.mobileLogoutBtn}>
                 🚪 Log Out
               </button>

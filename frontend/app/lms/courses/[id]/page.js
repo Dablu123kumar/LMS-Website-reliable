@@ -6,9 +6,148 @@ import Link from 'next/link';
 import { api } from '@/lib/api';
 import { courses as mockCourses, enrolledCourses as mockEnrolledCourses } from '@/lib/data';
 import VideoPlayer from '@/components/VideoPlayer';
+import AgoraLiveRoom from '@/components/AgoraLiveRoom';
 import styles from './page.module.css';
 
 const SAMPLE_VIDEO = 'https://www.w3schools.com/html/mov_bbb.mp4';
+
+function LiveClassStatusTracker({ scheduledAt, startedAt, status, onJoin, joiningLive }) {
+  const [timeLeft, setTimeLeft] = useState('');
+  const [elapsedTime, setElapsedTime] = useState('');
+
+  useEffect(() => {
+    const updateTimers = () => {
+      const now = new Date();
+      if (status === 'SCHEDULED') {
+        const target = new Date(scheduledAt);
+        const diff = target - now;
+
+        if (diff <= 0) {
+          setTimeLeft('Starting shortly...');
+        } else {
+          const hours = Math.floor(diff / (1000 * 60 * 60));
+          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+          
+          const pad = (num) => String(num).padStart(2, '0');
+          setTimeLeft(`${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s left`);
+        }
+      } else if (status === 'LIVE') {
+        const start = startedAt ? new Date(startedAt) : new Date(scheduledAt);
+        const diff = now - start;
+
+        if (diff < 0) {
+          setElapsedTime('Started just now');
+        } else {
+          const hours = Math.floor(diff / (1000 * 60 * 60));
+          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+          let elapsed = '';
+          if (hours > 0) {
+            elapsed += `${hours}h `;
+          }
+          if (minutes > 0 || hours > 0) {
+            elapsed += `${minutes}m `;
+          }
+          elapsed += `${seconds}s ago`;
+          setElapsedTime(`Started ${elapsed}`);
+        }
+      }
+    };
+
+    updateTimers();
+    const interval = setInterval(updateTimers, 1000);
+
+    return () => clearInterval(interval);
+  }, [scheduledAt, startedAt, status]);
+
+  if (status === 'SCHEDULED') {
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '4px',
+        padding: '8px 16px',
+        background: 'rgba(245, 158, 11, 0.1)',
+        border: '1px solid rgba(245, 158, 11, 0.2)',
+        borderRadius: '8px',
+        color: '#f59e0b',
+        boxShadow: 'var(--shadow-sm)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600', fontSize: '0.8rem' }}>
+          <span>⏰ Starts in:</span>
+        </div>
+        <div style={{ fontSize: '1rem', fontFamily: 'monospace', fontWeight: '700' }}>
+          {timeLeft || 'Calculating...'}
+        </div>
+      </div>
+    );
+  }
+
+  if (status === 'LIVE') {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        padding: '8px 16px',
+        background: 'rgba(16, 185, 129, 0.1)',
+        border: '1px solid rgba(16, 185, 129, 0.2)',
+        borderRadius: '8px',
+        boxShadow: 'var(--shadow-sm)'
+      }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#10b981', fontWeight: '700', fontSize: '0.8rem' }}>
+            <span style={{ display: 'inline-block', width: '6px', height: '6px', background: '#ef4444', borderRadius: '50%', animation: 'pulse 1.5s infinite' }} />
+            <span>LIVE NOW</span>
+          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+            {elapsedTime || 'Started recently'}
+          </div>
+        </div>
+        <button
+          onClick={onJoin}
+          disabled={joiningLive}
+          style={{
+            display: 'inline-block',
+            padding: '0.4rem 1.2rem',
+            backgroundColor: '#ef4444',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontWeight: '700',
+            boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
+            fontSize: '0.82rem',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          {joiningLive ? 'Connecting... ⏳' : 'JOIN NOW'}
+        </button>
+      </div>
+    );
+  }
+
+  if (status === 'COMPLETED') {
+    return (
+      <div style={{
+        padding: '8px 16px',
+        background: 'rgba(255, 255, 255, 0.03)',
+        border: '1px solid var(--border-glass)',
+        borderRadius: '8px',
+        color: 'var(--text-muted)',
+        fontSize: '0.8rem',
+        fontWeight: '500',
+        display: 'inline-block'
+      }}>
+        🏁 Ended
+      </div>
+    );
+  }
+
+  return null;
+}
 
 export default function CourseContentPage() {
   const { id } = useParams();
@@ -24,6 +163,33 @@ export default function CourseContentPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notes, setNotes] = useState('');
+
+  // Agora custom in-app live classroom states
+  const [agoraToken, setAgoraToken] = useState(null);
+  const [agoraAppId, setAgoraAppId] = useState('');
+  const [agoraUid, setAgoraUid] = useState(0);
+  const [joiningLive, setJoiningLive] = useState(false);
+  const [joinedLiveClassId, setJoinedLiveClassId] = useState(null);
+
+  async function handleJoinLive(liveClassId) {
+    setJoiningLive(true);
+    try {
+      const res = await api.getLiveClassToken(liveClassId);
+      if (res?.success && res.data) {
+        setAgoraToken(res.data.token);
+        setAgoraAppId(res.data.appId);
+        setAgoraUid(res.data.uid);
+        setJoinedLiveClassId(liveClassId);
+      } else {
+        alert('Failed to connect to the live class session.');
+      }
+    } catch (err) {
+      console.error('[Agora] Error fetching token:', err);
+      alert(err.message || 'Error connecting to the live class.');
+    } finally {
+      setJoiningLive(false);
+    }
+  }
 
   useEffect(() => {
     async function loadCourseContent() {
@@ -77,10 +243,14 @@ export default function CourseContentPage() {
         {
           title: '📡 Live Classes',
           lessons: liveClasses.map((lc) => ({
+            id: lc.id,
             title: `[Live] ${lc.title}`,
             duration: lc.status === 'LIVE' ? '🔴 Live Now' : 'Scheduled',
             isLive: true,
             meetingUrl: lc.meetingUrl,
+            status: lc.status,
+            scheduledAt: lc.scheduledAt,
+            startedAt: lc.startedAt,
           })),
         },
         ...list,
@@ -174,6 +344,9 @@ export default function CourseContentPage() {
       setExpandedModules((prev) => [...prev, mi]);
     }
     setSidebarOpen(false);
+    // Disconnect any active in-app live classroom when switching lessons
+    setJoinedLiveClassId(null);
+    setAgoraToken(null);
   };
 
   const toggleComplete = (mi, li) => {
@@ -288,11 +461,25 @@ export default function CourseContentPage() {
       <div className={styles.mainContent}>
         {/* Video Player */}
         <div className={styles.videoSection}>
-          <VideoPlayer
-            src={currentLesson?.videoUrl || SAMPLE_VIDEO}
-            title={currentLesson?.title || 'Select a lesson'}
-            poster={course.thumbnailUrl}
-          />
+          {joinedLiveClassId ? (
+            <AgoraLiveRoom
+              channelName={joinedLiveClassId}
+              token={agoraToken}
+              appId={agoraAppId}
+              uid={agoraUid}
+              isHost={false}
+              onLeave={() => {
+                setJoinedLiveClassId(null);
+                setAgoraToken(null);
+              }}
+            />
+          ) : (
+            <VideoPlayer
+              src={currentLesson?.videoUrl || SAMPLE_VIDEO}
+              title={currentLesson?.title || 'Select a lesson'}
+              poster={course.thumbnailUrl}
+            />
+          )}
         </div>
 
         {/* Lesson Info */}
@@ -303,24 +490,13 @@ export default function CourseContentPage() {
                 {currentLesson?.title || 'Select a lesson'}
               </h2>
               {currentLesson?.isLive && (
-                <a
-                  href={currentLesson.meetingUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-block',
-                    padding: '0.4rem 1rem',
-                    backgroundColor: '#ef4444',
-                    color: '#fff',
-                    borderRadius: '6px',
-                    textDecoration: 'none',
-                    fontWeight: '600',
-                    boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
-                    fontSize: '0.85rem',
-                  }}
-                >
-                  🔴 Join Live Session
-                </a>
+                <LiveClassStatusTracker
+                  scheduledAt={currentLesson.scheduledAt}
+                  startedAt={currentLesson.startedAt}
+                  status={currentLesson.status}
+                  joiningLive={joiningLive}
+                  onJoin={() => handleJoinLive(currentLesson.id)}
+                />
               )}
             </div>
             <div className={styles.navButtons}>

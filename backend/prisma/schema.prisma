@@ -21,9 +21,11 @@ model GeneralUser {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  lmsCredentials LmsCredential[]
-  enrollments    Enrollment[]
-  payments       Payment[]
+  lmsCredentials     LmsCredential[]
+  enrollments        Enrollment[]
+  payments           Payment[]
+  batches            Batch[]
+  studentLiveClasses LiveClass[]     @relation("StudentLiveClasses")
 
   @@index([email])
   @@index([role])
@@ -90,6 +92,7 @@ model Course {
   liveClasses LiveClass[]
   recordings  Recording[]
   payments    Payment[]
+  batches     Batch[]
 
   @@index([slug])
   @@index([categoryId])
@@ -126,18 +129,39 @@ model LiveClass {
   title            String
   description      String?
   scheduledAt      DateTime
+  startedAt        DateTime?
   endedAt          DateTime?
   meetingUrl       String?
   status           String   @default("SCHEDULED") // SCHEDULED | LIVE | COMPLETED
   notificationSent Boolean  @default(false)
+  batchId          String?
+  studentId        String?
 
   course        Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  batch         Batch?         @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  student       GeneralUser?   @relation("StudentLiveClasses", fields: [studentId], references: [id], onDelete: SetNull)
   recordings    Recording[]
   notifications Notification[]
 
   @@index([courseId])
   @@index([status])
   @@index([scheduledAt])
+  @@index([batchId])
+  @@index([studentId])
+}
+
+model Batch {
+  id        String   @id @default(uuid())
+  courseId  String
+  batchName String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  course      Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  students    GeneralUser[]
+  liveClasses LiveClass[]
+
+  @@index([courseId])
 }
 
 model Recording {
@@ -201,4 +225,22 @@ model Payment {
   @@index([courseId])
   @@index([status])
   @@index([gatewayOrderId])
+}
+
+model Inquiry {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String?
+  course    String?
+  message   String?
+  type      String   // CONTACT_PAGE | BOTTOM_FORM | COUNSELLING_FORM
+  status    String   @default("PENDING") // PENDING | CONTACTED | RESOLVED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
 }

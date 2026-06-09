@@ -83,15 +83,38 @@ async function getCourseContent(req, res, next) {
           select: { name: true, slug: true },
         },
         liveClasses: {
+          where: {
+            OR: [
+              {
+                batchId: null,
+                studentId: null,
+              },
+              {
+                batch: {
+                  students: {
+                    some: {
+                      id: req.lmsUser.generalUserId,
+                    },
+                  },
+                },
+              },
+              {
+                studentId: req.lmsUser.generalUserId,
+              },
+            ],
+          },
           orderBy: { scheduledAt: 'desc' },
           select: {
             id: true,
             title: true,
             description: true,
             scheduledAt: true,
+            startedAt: true,
             endedAt: true,
             meetingUrl: true,
             status: true,
+            batchId: true,
+            studentId: true,
           },
         },
         recordings: {
@@ -101,6 +124,7 @@ async function getCourseContent(req, res, next) {
             id: true,
             title: true,
             description: true,
+            videoUrl: true,
             thumbnailUrl: true,
             durationSeconds: true,
             sortOrder: true,
@@ -384,6 +408,69 @@ async function deactivateAccount(req, res, next) {
   }
 }
 
+/**
+ * GET /api/v1/dashboard/live-classes/:id/token
+ * Generate Agora token for a student joining a live class (enrolled check)
+ */
+async function getLiveClassToken(req, res, next) {
+  try {
+    const { id } = req.params;
+    const credentialId = req.lmsUser.credentialId;
+
+    const liveClass = await prisma.liveClass.findUnique({
+      where: { id },
+      include: {
+        batch: {
+          select: {
+            students: {
+              where: { id: req.lmsUser.generalUserId },
+              select: { id: true },
+            },
+          },
+        },
+        course: {
+          select: {
+            enrollments: {
+              where: { lmsCredentialId: credentialId },
+            },
+          },
+        },
+      },
+    });
+
+    if (!liveClass) {
+      return errorResponse(res, 'Live class not found.', 404);
+    }
+
+    if (liveClass.course.enrollments.length === 0) {
+      return errorResponse(res, 'You are not enrolled in this course.', 403);
+    }
+
+    // Check targeting restriction
+    const isTargetedToAll = !liveClass.batchId && !liveClass.studentId;
+    const isTargetedToMyBatch = !!(liveClass.batchId && liveClass.batch && liveClass.batch.students.length > 0);
+    const isTargetedToMeIndividually = !!(liveClass.studentId && liveClass.studentId === req.lmsUser.generalUserId);
+
+    if (!isTargetedToAll && !isTargetedToMyBatch && !isTargetedToMeIndividually) {
+      return errorResponse(res, 'You are not authorized to join this live class.', 403);
+    }
+
+    // Generate a random positive integer UID for the student
+    const uid = Math.floor(Math.random() * 10000) + 1;
+    // Students join as subscribers
+    const { getAgoraToken } = require('../utils/agora');
+    const tokenData = getAgoraToken(id, uid, false);
+
+    if (tokenData.error) {
+      return errorResponse(res, tokenData.error, 500);
+    }
+
+    return successResponse(res, 'Agora subscriber token generated successfully.', tokenData);
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   getMyCourses,
   getCourseContent,
@@ -394,4 +481,5 @@ module.exports = {
   updateProfile,
   changePassword,
   deactivateAccount,
+  getLiveClassToken,
 };

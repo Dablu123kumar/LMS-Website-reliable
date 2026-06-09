@@ -6,9 +6,12 @@ import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import CourseCard from '@/components/CourseCard';
+import Typewriter from '@/components/Typewriter';
+import SpotlightCard from '@/components/SpotlightCard';
 import { courses, categories, testimonials, faqItems } from '@/lib/data';
 import { api } from '@/lib/api';
 import styles from './page.module.css';
+
 
 /* ── Scroll Reveal Hook ── */
 function useReveal() {
@@ -128,21 +131,46 @@ export default function HomePage() {
   const handleCounsellingSubmit = async (e) => {
     e.preventDefault();
     setCounsellingSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setCounsellingSubmitting(false);
-    setCounsellingSuccess(true);
-    setCounsellingForm({ name: '', phone: '', email: '', course: '' });
-    setTimeout(() => setCounsellingSuccess(false), 5000);
+    try {
+      await api.createInquiry({
+        name: counsellingForm.name,
+        phone: counsellingForm.phone,
+        email: counsellingForm.email,
+        course: counsellingForm.course,
+        type: 'COUNSELLING_FORM'
+      });
+      setCounsellingSuccess(true);
+      setCounsellingForm({ name: '', phone: '', email: '', course: '' });
+      setTimeout(() => setCounsellingSuccess(false), 5000);
+    } catch (err) {
+      console.error('Failed to submit counselling form:', err);
+      alert('Failed to submit request: ' + err.message);
+    } finally {
+      setCounsellingSubmitting(false);
+    }
   };
 
   const handleBottomSubmit = async (e) => {
     e.preventDefault();
     setBottomSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setBottomSubmitting(false);
-    setBottomSuccess(true);
-    setBottomForm({ name: '', phone: '', email: '', course: '', message: '' });
-    setTimeout(() => setBottomSuccess(false), 5000);
+    try {
+      await api.createInquiry({
+        name: bottomForm.name,
+        phone: bottomForm.phone,
+        email: bottomForm.email,
+        course: bottomForm.course,
+        message: bottomForm.message,
+        type: 'BOTTOM_FORM'
+      });
+      setBottomSuccess(true);
+      setBottomForm({ name: '', phone: '', email: '', course: '', message: '' });
+      setTimeout(() => setBottomSuccess(false), 5000);
+    } catch (err) {
+      console.error('Failed to submit bottom form:', err);
+      alert('Failed to submit query: ' + err.message);
+    } finally {
+      setBottomSubmitting(false);
+    }
   };
 
 
@@ -199,7 +227,22 @@ export default function HomePage() {
                   {slide.badge}
                 </div>
                 <h1 className={styles.slideTitle}>
-                  {slide.title}
+                   {idx === currentSlide ? (
+                     <Typewriter
+                       words={
+                         idx === 0
+                           ? ['Full Stack Web Development Program', 'MERN Stack Applications Engineering', 'Next.js 15 Server-Side Development']
+                           : idx === 1
+                           ? ['UI/UX & Creative Graphic Design', 'Figma High-Fidelity UI Prototyping', 'Interactive Visual Brand Design']
+                           : ['AI, Machine Learning & Analytics', 'Python Neural Network Modeling', 'SQL & Advanced Data Analysis']
+                       }
+                       typeSpeed={60}
+                       eraseSpeed={30}
+                       delay={3000}
+                     />
+                   ) : (
+                     slide.title
+                   )}
                 </h1>
                 <p className={styles.slideSubtitle}>
                   {slide.subtitle}
@@ -220,6 +263,7 @@ export default function HomePage() {
               className={`${styles.dotButton} ${idx === currentSlide ? styles.dotActive : ''}`}
               onClick={() => setCurrentSlide(idx)}
               aria-label={`Go to slide ${idx + 1}`}
+              suppressHydrationWarning
             />
           ))}
         </div>
@@ -260,38 +304,38 @@ export default function HomePage() {
           <div className={styles.whoCanJoinGrid}>
             {/* Left side: Profiles grid */}
             <div className={styles.profilesGrid}>
-              <div className={styles.profileCard}>
+              <SpotlightCard className={`${styles.profileCard} reveal reveal-left`} glowColor="rgba(99, 102, 241, 0.08)" borderGlowColor="rgba(99, 102, 241, 0.4)">
                 <div className={styles.profileIcon} style={{ background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1' }}>🎓</div>
                 <div className={styles.profileContent}>
                   <h3>Students & Freshers</h3>
                   <p>Build a solid coding foundation and learn design/development methodologies to kickstart your career with top portfolios.</p>
                 </div>
-              </div>
-              <div className={styles.profileCard}>
+              </SpotlightCard>
+              <SpotlightCard className={`${styles.profileCard} reveal reveal-left reveal-delay-1`} glowColor="rgba(244, 63, 94, 0.08)" borderGlowColor="rgba(244, 63, 94, 0.4)">
                 <div className={styles.profileIcon} style={{ background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e' }}>💼</div>
                 <div className={styles.profileContent}>
                   <h3>Job Seekers</h3>
                   <p>Acquire premium practical experience, complete capstone projects, and prepare with mock interviews to land your first IT job.</p>
                 </div>
-              </div>
-              <div className={styles.profileCard}>
+              </SpotlightCard>
+              <SpotlightCard className={`${styles.profileCard} reveal reveal-left reveal-delay-2`} glowColor="rgba(16, 185, 129, 0.08)" borderGlowColor="rgba(16, 185, 129, 0.4)">
                 <div className={styles.profileIcon} style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>👨‍💻</div>
                 <div className={styles.profileContent}>
                   <h3>Working Professionals</h3>
                   <p>Transition roles or upgrade your skills. Master cloud deployments, DevOps pipelines, advanced architecture, and generative AI.</p>
                 </div>
-              </div>
-              <div className={styles.profileCard}>
+              </SpotlightCard>
+              <SpotlightCard className={`${styles.profileCard} reveal reveal-left reveal-delay-3`} glowColor="rgba(245, 158, 11, 0.08)" borderGlowColor="rgba(245, 158, 11, 0.4)">
                 <div className={styles.profileIcon} style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>📈</div>
                 <div className={styles.profileContent}>
                   <h3>Business Owners & Creators</h3>
                   <p>Take charge of your product design, manage digital marketing campaigns, and build web platforms independently.</p>
                 </div>
-              </div>
+              </SpotlightCard>
             </div>
 
             {/* Right side: Counselling Form Card */}
-            <div className={styles.counsellingFormCard}>
+            <SpotlightCard className={`${styles.counsellingFormCard} reveal reveal-right`}>
               <div className={styles.counsellingHeader}>
                 <h3>Get Free Counselling</h3>
                 <p>Enquire now to discuss career roadmaps with expert advisors</p>
@@ -347,12 +391,12 @@ export default function HomePage() {
                       ))}
                     </select>
                   </div>
-                  <button type="submit" disabled={counsellingSubmitting} className={styles.formSubmitBtn} suppressHydrationWarning>
+                  <button type="submit" disabled={counsellingSubmitting} className={`${styles.formSubmitBtn} btn-shine`} suppressHydrationWarning>
                     {counsellingSubmitting ? 'Sending...' : 'Send Request 🚀'}
                   </button>
                 </form>
               )}
-            </div>
+            </SpotlightCard>
           </div>
         </div>
       </section>
@@ -429,8 +473,14 @@ export default function HomePage() {
             Explore Our <span className="text-gradient">Learning Pathways</span>
           </h2>
           <div className={`grid ${styles.categoryGrid}`}>
-            {categoriesList.map((cat) => (
-              <div key={cat.id} className={styles.categoryCard} style={{ '--accent': cat.color }}>
+            {categoriesList.map((cat, idx) => (
+              <SpotlightCard
+                key={cat.id}
+                className={`${styles.categoryCard} reveal reveal-scale reveal-delay-${(idx % 4) + 1}`}
+                style={{ '--accent': cat.color }}
+                glowColor={`${cat.color}12`}
+                borderGlowColor={`${cat.color}50`}
+              >
                 <span className={styles.categoryIcon}>{cat.icon}</span>
                 <h3>{cat.name}</h3>
                 <p>{cat.description}</p>
@@ -440,7 +490,7 @@ export default function HomePage() {
                     View Courses →
                   </Link>
                 </div>
-              </div>
+              </SpotlightCard>
             ))}
           </div>
         </div>
@@ -640,30 +690,30 @@ export default function HomePage() {
           </p>
 
           <div className={styles.studentAlumniRow}>
-            <div className={styles.alumniCard}>
+            <SpotlightCard className={`${styles.alumniCard} reveal reveal-up`} glowColor="rgba(6, 182, 212, 0.08)" borderGlowColor="rgba(6, 182, 212, 0.4)">
               <div className={styles.alumniBadge}>Placed at Tech Mahindra</div>
               <div className={styles.alumniAvatar}>👨‍🎓</div>
               <h3>Rahul Kumar</h3>
               <p>Full Stack Developer</p>
-            </div>
-            <div className={styles.alumniCard}>
+            </SpotlightCard>
+            <SpotlightCard className={`${styles.alumniCard} reveal reveal-up reveal-delay-1`} glowColor="rgba(99, 102, 241, 0.08)" borderGlowColor="rgba(99, 102, 241, 0.4)">
               <div className={styles.alumniBadge}>Placed at Infosys</div>
               <div className={styles.alumniAvatar}>👩‍🎓</div>
               <h3>Priya Sharma</h3>
               <p>UI/UX Product Designer</p>
-            </div>
-            <div className={styles.alumniCard}>
+            </SpotlightCard>
+            <SpotlightCard className={`${styles.alumniCard} reveal reveal-up reveal-delay-2`} glowColor="rgba(245, 158, 11, 0.08)" borderGlowColor="rgba(245, 158, 11, 0.4)">
               <div className={styles.alumniBadge}>Placed at Wipro</div>
               <div className={styles.alumniAvatar}>👨‍🎓</div>
               <h3>Amit Verma</h3>
               <p>Python Backend Engineer</p>
-            </div>
-            <div className={styles.alumniCard}>
+            </SpotlightCard>
+            <SpotlightCard className={`${styles.alumniCard} reveal reveal-up reveal-delay-3`} glowColor="rgba(244, 63, 94, 0.08)" borderGlowColor="rgba(244, 63, 94, 0.4)">
               <div className={styles.alumniBadge}>Placed at Cognizant</div>
               <div className={styles.alumniAvatar}>👩‍🎓</div>
               <h3>Neha Gupta</h3>
               <p>DevOps & Cloud Engineer</p>
-            </div>
+            </SpotlightCard>
           </div>
         </div>
       </section>
@@ -687,8 +737,8 @@ export default function HomePage() {
           </div>
 
           <div className={styles.reviewsGrid}>
-            {testimonials.map((t) => (
-              <div key={t.id} className={styles.reviewCard}>
+            {testimonials.map((t, idx) => (
+              <SpotlightCard key={t.id} className={`${styles.reviewCard} reveal reveal-up reveal-delay-${(idx % 3) + 1}`}>
                 <div className={styles.reviewHeader}>
                   <div className={styles.reviewInfo}>
                     <h4>{t.name}</h4>
@@ -698,7 +748,7 @@ export default function HomePage() {
                 </div>
                 <p className={styles.reviewText}>{t.text}</p>
                 <div className={styles.reviewStars}>⭐⭐⭐⭐⭐</div>
-              </div>
+              </SpotlightCard>
             ))}
           </div>
         </div>
@@ -743,18 +793,18 @@ export default function HomePage() {
       <section className={`section ${styles.marketingBannersSection} reveal`}>
         <div className="container">
           <div className={styles.marketingGrid}>
-            <div className={`${styles.marketingCard} ${styles.marketingCardOffline}`}>
+            <SpotlightCard className={`${styles.marketingCard} ${styles.marketingCardOffline} reveal reveal-left`} glowColor="rgba(99, 102, 241, 0.08)" borderGlowColor="rgba(99, 102, 241, 0.4)">
               <span className={styles.marketingIcon}>🏫</span>
               <h3>Classroom Training (Offline)</h3>
               <p>Attend interactive modules directly at our Sector 34, Chandigarh center. Experience 1-on-1 developer desks, physical computer labs, and face-to-face mentorship.</p>
               <div className={styles.marketingBadge}>Interactive Classroom batches</div>
-            </div>
-            <div className={`${styles.marketingCard} ${styles.marketingCardOnline}`}>
+            </SpotlightCard>
+            <SpotlightCard className={`${styles.marketingCard} ${styles.marketingCardOnline} reveal reveal-right`} glowColor="rgba(6, 182, 212, 0.08)" borderGlowColor="rgba(6, 182, 212, 0.4)">
               <span className={styles.marketingIcon}>💻</span>
               <h3>Virtual Classroom (Online Live)</h3>
               <p>Learn from anywhere in India with our live stream classes. Connect with mentors via real-time screen shares, interact on collaborative Slack chats, and access recorded libraries.</p>
               <div className={styles.marketingBadge}>Live Interactive Streams</div>
-            </div>
+            </SpotlightCard>
           </div>
         </div>
       </section>
@@ -764,7 +814,7 @@ export default function HomePage() {
         <div className="container">
           <div className={styles.bottomSplitGrid}>
             {/* Left: Get in touch form */}
-            <div className={styles.contactFormCard}>
+            <SpotlightCard className={`${styles.contactFormCard} reveal reveal-left`}>
               <div className={styles.contactHeader}>
                 <h2>Have Any <span className="text-gradient">Questions?</span></h2>
                 <p>Submit your details and our team will get back to you within 24 hours.</p>
@@ -830,15 +880,15 @@ export default function HomePage() {
                       suppressHydrationWarning
                     />
                   </div>
-                  <button type="submit" disabled={bottomSubmitting} className={styles.formSubmitBtn} suppressHydrationWarning>
+                  <button type="submit" disabled={bottomSubmitting} className={`${styles.formSubmitBtn} btn-shine`} suppressHydrationWarning>
                     {bottomSubmitting ? 'Sending...' : 'Send Message ✉️'}
                   </button>
                 </form>
               )}
-            </div>
+            </SpotlightCard>
 
             {/* Right: FAQ Accordion */}
-            <div className={styles.faqAccordionCol}>
+            <div className={`${styles.faqAccordionCol} reveal reveal-right`}>
               <h2 className={styles.faqColTitle}>Frequently Asked <span className="text-gradient">Questions</span></h2>
               <p className={styles.faqColSubtitle}>Get instant answers about our training, batch timings, credentials, and internship programs</p>
               <FAQAccordion items={faqItems} />

@@ -112,8 +112,8 @@ export default function LmsLayout({ children }) {
         </button>
 
         <Link href="/lms/dashboard" className={styles.sidebarLogo} onClick={closeSidebar}>
-          <span className={styles.logoIcon}>L</span>
-          <span className={styles.logoText}>LearnHub</span>
+          <img src="/logo_dark.png" className={`${styles.logoImg} ${styles.logoLight}`} alt="LearnHub Logo" />
+          <img src="/logo_light.png" className={`${styles.logoImg} ${styles.logoDark}`} alt="LearnHub Logo" />
           <span className={styles.lmsBadge}>LMS</span>
         </Link>
 

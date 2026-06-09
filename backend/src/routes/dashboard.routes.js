@@ -15,5 +15,6 @@ router.get('/profile', dashboardController.getProfile);
 router.put('/profile', dashboardController.updateProfile);
 router.put('/profile/password', dashboardController.changePassword);
 router.post('/profile/deactivate', dashboardController.deactivateAccount);
+router.get('/live-classes/:id/token', dashboardController.getLiveClassToken);
 
 module.exports = router;

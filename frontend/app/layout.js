@@ -1,4 +1,7 @@
 import Chatbot from '@/components/Chatbot';
+import Preloader from '@/components/Preloader';
+import SmoothScroll from '@/components/SmoothScroll';
+import InteractiveBackground from '@/components/InteractiveBackground';
 import './globals.css';
 
 export const metadata = {
@@ -37,9 +40,14 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
-        {children}
-        <Chatbot />
+        <Preloader />
+        <InteractiveBackground />
+        <SmoothScroll>
+          {children}
+          <Chatbot />
+        </SmoothScroll>
       </body>
     </html>
   );
 }
+

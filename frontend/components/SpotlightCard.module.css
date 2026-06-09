@@ -1,0 +1,75 @@
+.spotlightCard {
+  position: relative;
+  border-radius: var(--radius-lg, 16px);
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  overflow: hidden;
+  transition: transform var(--transition-spring, 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)), 
+              border-color var(--transition-base, 0.3s),
+              box-shadow var(--transition-base, 0.3s);
+  display: flex;
+  flex-direction: column;
+}
+
+.spotlightCard:hover {
+  transform: translateY(-4px);
+  border-color: rgba(99, 102, 241, 0.25);
+  box-shadow: var(--shadow-glow), var(--shadow-card);
+}
+
+.glowOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  background: radial-gradient(
+    300px circle at var(--mouse-x, 0px) var(--mouse-y, 0px),
+    var(--glow-color, rgba(99, 102, 241, 0.08)),
+    transparent 80%
+  );
+}
+
+.glowVisible {
+  opacity: 1;
+}
+
+.borderOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  background: radial-gradient(
+    180px circle at var(--mouse-x, 0px) var(--mouse-y, 0px),
+    var(--border-glow-color, rgba(99, 102, 241, 0.35)),
+    transparent 60%
+  );
+  mask: linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff);
+  mask-composite: exclude;
+  -webkit-mask: linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff);
+  -webkit-mask-composite: xor;
+  padding: 1px;
+}
+
+.borderVisible {
+  opacity: 1;
+}
+
+.cardContent {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}

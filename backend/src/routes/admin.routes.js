@@ -40,7 +40,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+  limits: { fileSize: 500 * 1024 * 1024 }, // 500MB limit
   fileFilter: function (req, file, cb) {
     const filetypes = /jpeg|jpg|png|webp|gif|mp4|mkv|avi|mov|webm|3gp/;
     const mimetype = /image\/|video\//.test(file.mimetype);
@@ -58,9 +58,10 @@ router.post('/upload', upload.single('file'), async (req, res) => {
   }
 
   try {
-    const result = await cloudinary.uploader.upload(req.file.path, {
+    const result = await cloudinary.uploader.upload_large(req.file.path, {
       resource_type: 'auto',
       folder: 'lms_media',
+      chunk_size: 6000000, // 6MB chunks
     });
 
     // Delete the local temporary file
@@ -122,6 +123,14 @@ router.post('/live-classes', validate(scheduleLiveClassSchema), adminController.
 router.put('/live-classes/:id/start', adminController.startLiveClass);
 router.put('/live-classes/:id/end', adminController.endLiveClass);
 router.post('/live-classes/:id/notify', adminController.notifyLiveClass);
+router.get('/live-classes/:id/token', adminController.getLiveClassToken);
+
+// Batch management
+router.post('/batches', adminController.createBatch);
+router.get('/courses/:courseId/batches', adminController.listBatchesForCourse);
+router.put('/batches/:id', adminController.updateBatch);
+router.delete('/batches/:id', adminController.deleteBatch);
+router.get('/courses/:courseId/students', adminController.listCourseStudents);
 
 // Recording management
 const addRecordingSchema = {

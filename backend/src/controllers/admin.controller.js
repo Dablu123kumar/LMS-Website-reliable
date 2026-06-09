@@ -1,5 +1,6 @@
 const prisma = require('../utils/prismaClient');
 const { successResponse, errorResponse, paginatedResponse } = require('../utils/apiResponse');
+const { getAgoraToken } = require('../utils/agora');
 
 /**
  * POST /api/v1/admin/courses
@@ -161,7 +162,7 @@ async function createCategory(req, res, next) {
  */
 async function scheduleLiveClass(req, res, next) {
   try {
-    const { courseId, title, description, scheduledAt, meetingUrl } = req.body;
+    const { courseId, title, description, scheduledAt, meetingUrl, batchId, studentId } = req.body;
 
     // Verify course exists
     const course = await prisma.course.findUnique({ where: { id: courseId } });
@@ -177,9 +178,13 @@ async function scheduleLiveClass(req, res, next) {
         scheduledAt: new Date(scheduledAt),
         meetingUrl: meetingUrl || null,
         status: 'SCHEDULED',
+        batchId: batchId || null,
+        studentId: studentId || null,
       },
       include: {
         course: { select: { title: true } },
+        batch: { select: { batchName: true } },
+        student: { select: { firstName: true, lastName: true } },
       },
     });
 
@@ -211,6 +216,7 @@ async function startLiveClass(req, res, next) {
       where: { id },
       data: {
         status: 'LIVE',
+        startedAt: new Date(),
         meetingUrl: meetingUrl || liveClass.meetingUrl,
       },
     });
@@ -250,7 +256,7 @@ async function endLiveClass(req, res, next) {
 
 /**
  * POST /api/v1/admin/live-classes/:id/notify
- * Send notification to all enrolled students for a live class (admin only)
+ * Send notification to all targeted students for a live class (admin only)
  */
 async function notifyLiveClass(req, res, next) {
   try {
@@ -260,17 +266,51 @@ async function notifyLiveClass(req, res, next) {
       where: { id },
       include: {
         course: {
-          include: {
-            enrollments: {
-              select: { lmsCredentialId: true },
-            },
-          },
+          select: { title: true }
         },
-      },
+        batch: {
+          include: {
+            students: {
+              include: {
+                lmsCredentials: {
+                  where: { isActive: true },
+                  select: { id: true }
+                }
+              }
+            }
+          }
+        },
+        student: {
+          include: {
+            lmsCredentials: {
+              where: { isActive: true },
+              select: { id: true }
+            }
+          }
+        }
+      }
     });
 
     if (!liveClass) {
       return errorResponse(res, 'Live class not found.', 404);
+    }
+
+    // Determine target credential IDs
+    let targetCredentialIds = [];
+    if (liveClass.studentId && liveClass.student) {
+      targetCredentialIds = liveClass.student.lmsCredentials.map(c => c.id);
+    } else if (liveClass.batchId && liveClass.batch) {
+      liveClass.batch.students.forEach(student => {
+        student.lmsCredentials.forEach(c => {
+          targetCredentialIds.push(c.id);
+        });
+      });
+    } else {
+      const enrollments = await prisma.enrollment.findMany({
+        where: { courseId: liveClass.courseId },
+        select: { lmsCredentialId: true }
+      });
+      targetCredentialIds = enrollments.map(e => e.lmsCredentialId);
     }
 
     const notificationType =
@@ -284,10 +324,10 @@ async function notifyLiveClass(req, res, next) {
         ? `${liveClass.title} is live now! Join the class for "${liveClass.course.title}".`
         : `${liveClass.title} for "${liveClass.course.title}" is scheduled at ${liveClass.scheduledAt.toISOString()}.`;
 
-    // Create notifications for all enrolled students
-    const notifications = liveClass.course.enrollments.map((enrollment) => ({
+    // Create notifications for targeted students
+    const notifications = targetCredentialIds.map((credId) => ({
       liveClassId: id,
-      userId: enrollment.lmsCredentialId,
+      userId: credId,
       type: notificationType,
       title: notificationTitle,
       message: notificationMessage,
@@ -306,8 +346,8 @@ async function notifyLiveClass(req, res, next) {
     // Emit real-time notifications via Socket.IO
     const io = req.app.get('io');
     if (io) {
-      liveClass.course.enrollments.forEach((enrollment) => {
-        io.of('/notifications').to(`user:${enrollment.lmsCredentialId}`).emit('notification', {
+      targetCredentialIds.forEach((credId) => {
+        io.of('/notifications').to(`user:${credId}`).emit('notification', {
           type: notificationType,
           title: notificationTitle,
           message: notificationMessage,
@@ -497,6 +537,8 @@ async function listLiveClasses(req, res, next) {
     const liveClasses = await prisma.liveClass.findMany({
       include: {
         course: { select: { id: true, title: true } },
+        batch: { select: { id: true, batchName: true } },
+        student: { select: { id: true, firstName: true, lastName: true } },
       },
       orderBy: { scheduledAt: 'desc' },
     });
@@ -710,6 +752,177 @@ async function deleteCategory(req, res, next) {
   }
 }
 
+/**
+ * GET /api/v1/admin/live-classes/:id/token
+ * Generate Agora token for starting/joining the live class (admin/instructor)
+ */
+async function getLiveClassToken(req, res, next) {
+  try {
+    const { id } = req.params;
+
+    const liveClass = await prisma.liveClass.findUnique({
+      where: { id },
+    });
+
+    if (!liveClass) {
+      return errorResponse(res, 'Live class not found.', 404);
+    }
+
+    // Generate a random positive integer UID for the admin/instructor
+    const uid = Math.floor(Math.random() * 10000) + 1;
+    // Admins/Instructors join as publishers
+    const tokenData = getAgoraToken(id, uid, true);
+
+    if (tokenData.error) {
+      return errorResponse(res, tokenData.error, 500);
+    }
+
+    return successResponse(res, 'Agora publisher token generated successfully.', tokenData);
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * POST /api/v1/admin/batches
+ * Create a new batch for a course (admin only)
+ */
+async function createBatch(req, res, next) {
+  try {
+    const { courseId, batchName, studentIds = [] } = req.body;
+
+    const course = await prisma.course.findUnique({ where: { id: courseId } });
+    if (!course) {
+      return errorResponse(res, 'Course not found.', 404);
+    }
+
+    const batch = await prisma.batch.create({
+      data: {
+        courseId,
+        batchName,
+        students: {
+          connect: studentIds.map((id) => ({ id })),
+        },
+      },
+      include: {
+        students: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
+      },
+    });
+
+    return successResponse(res, 'Batch created successfully.', batch, 201);
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * GET /api/v1/admin/courses/:courseId/batches
+ * List all batches of a course (admin only)
+ */
+async function listBatchesForCourse(req, res, next) {
+  try {
+    const { courseId } = req.params;
+    const batches = await prisma.batch.findMany({
+      where: { courseId },
+      include: {
+        students: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    return successResponse(res, 'Batches retrieved successfully.', batches);
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * PUT /api/v1/admin/batches/:id
+ * Update batch name or student list (admin only)
+ */
+async function updateBatch(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { batchName, studentIds } = req.body;
+
+    const existing = await prisma.batch.findUnique({ where: { id } });
+    if (!existing) {
+      return errorResponse(res, 'Batch not found.', 404);
+    }
+
+    const updateData = {};
+    if (batchName !== undefined) {
+      updateData.batchName = batchName;
+    }
+    if (studentIds !== undefined) {
+      updateData.students = {
+        set: studentIds.map((sid) => ({ id: sid })),
+      };
+    }
+
+    const batch = await prisma.batch.update({
+      where: { id },
+      data: updateData,
+      include: {
+        students: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
+      },
+    });
+
+    return successResponse(res, 'Batch updated successfully.', batch);
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * DELETE /api/v1/admin/batches/:id
+ * Delete a batch (admin only)
+ */
+async function deleteBatch(req, res, next) {
+  try {
+    const { id } = req.params;
+
+    const existing = await prisma.batch.findUnique({ where: { id } });
+    if (!existing) {
+      return errorResponse(res, 'Batch not found.', 404);
+    }
+
+    await prisma.batch.delete({ where: { id } });
+
+    return successResponse(res, 'Batch deleted successfully.');
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * GET /api/v1/admin/courses/:courseId/students
+ * List all students enrolled in a course (admin only)
+ */
+async function listCourseStudents(req, res, next) {
+  try {
+    const { courseId } = req.params;
+    const enrollments = await prisma.enrollment.findMany({
+      where: { courseId },
+      include: {
+        generalUser: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
+      },
+    });
+
+    const students = enrollments.map((e) => e.generalUser);
+    return successResponse(res, 'Course students retrieved successfully.', students);
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   createCourse,
   updateCourse,
@@ -729,4 +942,10 @@ module.exports = {
   listCategories,
   updateCategory,
   deleteCategory,
+  getLiveClassToken,
+  createBatch,
+  listBatchesForCourse,
+  updateBatch,
+  deleteBatch,
+  listCourseStudents,
 };

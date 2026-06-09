@@ -8,10 +8,8 @@ export default function Footer() {
         {/* Column 1 — About */}
         <div className={styles.col}>
           <div className={styles.footerLogo}>
-            <span className={styles.logoIcon}>📚</span>
-            <span className={styles.logoText}>
-              Learn<span className={styles.logoAccent}>Hub</span>
-            </span>
+            <img src="/logo_dark.png" className={`${styles.logoImg} ${styles.logoLight}`} alt="LearnHub Logo" />
+            <img src="/logo_light.png" className={`${styles.logoImg} ${styles.logoDark}`} alt="LearnHub Logo" />
           </div>
           <p className={styles.about}>
             Empowering learners with expert-led, industry-relevant courses.
@@ -30,6 +28,8 @@ export default function Footer() {
           <h4 className={styles.colTitle}>Quick Links</h4>
           <ul className={styles.linkList}>
             <li><Link href="/">Home</Link></li>
+            <li><Link href="/about">About Us</Link></li>
+            <li><Link href="/contact">Contact Us</Link></li>
             <li><Link href="/courses">All Courses</Link></li>
             <li><Link href="/#categories">Categories</Link></li>
             <li><Link href="/#faq">FAQ</Link></li>

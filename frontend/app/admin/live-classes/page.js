@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { api, getGeneralUser, getFullUrl } from '@/lib/api';
+import AgoraLiveRoom from '@/components/AgoraLiveRoom';
 import styles from './page.module.css';
 
 
@@ -48,6 +49,88 @@ export default function AdminLiveClassesPage() {
   const [uploadingRecordingVideo, setUploadingRecordingVideo] = useState(false);
   const [uploadingRecordingThumbnail, setUploadingRecordingThumbnail] = useState(false);
 
+  // Agora custom in-app live classroom states
+  const [streamingToken, setStreamingToken] = useState(null);
+  const [streamingAppId, setStreamingAppId] = useState('');
+  const [streamingUid, setStreamingUid] = useState(0);
+  const [streamingLiveClassId, setStreamingLiveClassId] = useState(null);
+
+  // Batch management states
+  const [showManageBatchesModal, setShowManageBatchesModal] = useState(false);
+  const [selectedCourseIdForBatches, setSelectedCourseIdForBatches] = useState('');
+  const [batchesList, setBatchesList] = useState([]);
+  const [studentsList, setStudentsList] = useState([]);
+  const [activeBatch, setActiveBatch] = useState(null); // editing/creating batch
+  const [batchForm, setBatchForm] = useState({
+    batchName: '',
+    studentIds: []
+  });
+
+  // Scheduling target states
+  const [targetingMode, setTargetingMode] = useState('ALL'); // 'ALL' | 'BATCH' | 'STUDENT'
+  const [selectedTargetBatchId, setSelectedTargetBatchId] = useState('');
+  const [selectedTargetStudentId, setSelectedTargetStudentId] = useState('');
+
+  async function loadBatchesAndStudents(courseId) {
+    if (!courseId) return;
+    try {
+      const [batchesRes, studentsRes] = await Promise.all([
+        api.adminGetBatches(courseId),
+        api.adminGetCourseStudents(courseId)
+      ]);
+      setBatchesList(batchesRes?.data || []);
+      setStudentsList(studentsRes?.data || []);
+    } catch (err) {
+      console.error('Failed to load batches or students:', err);
+      showToast('Failed to load batches/students.', 'error');
+    }
+  }
+
+  async function handleStartLiveClassDirect(item) {
+    if (!confirm(`Are you sure you want to launch the live class "${item.title}"?`)) return;
+    
+    setSubmitting(true);
+    try {
+      // 1. Transition class state to LIVE on server
+      if (item.status === 'SCHEDULED') {
+        await api.adminStartLiveClass(item.id, { meetingUrl: 'in-app' });
+      }
+      
+      // 2. Fetch Agora Publisher token
+      const res = await api.adminGetLiveClassToken(item.id);
+      if (res?.success && res.data) {
+        setStreamingToken(res.data.token);
+        setStreamingAppId(res.data.appId);
+        setStreamingUid(res.data.uid);
+        setStreamingLiveClassId(item.id);
+        showToast('In-App Live Stream started!');
+        // Refresh list to reflect LIVE status
+        await loadData();
+      } else {
+        showToast('Failed to generate stream token.', 'error');
+      }
+    } catch (err) {
+      console.error('[Agora] Host start error:', err);
+      showToast(err.message || 'Failed to start live stream.', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleStopStreaming(endPermanently = false) {
+    if (endPermanently && streamingLiveClassId) {
+      try {
+        await api.adminEndLiveClass(streamingLiveClassId);
+        showToast('Live session ended permanently.');
+      } catch (err) {
+        showToast('Failed to end live session on server.', 'error');
+      }
+    }
+    setStreamingLiveClassId(null);
+    setStreamingToken(null);
+    await loadData();
+  }
+
   async function handleFileUpload(field, setUploading) {
     return async (e) => {
       const file = e.target.files[0];
@@ -75,6 +158,12 @@ export default function AdminLiveClassesPage() {
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (scheduleForm.courseId) {
+      loadBatchesAndStudents(scheduleForm.courseId);
+    }
+  }, [scheduleForm.courseId]);
 
   async function loadData() {
     try {
@@ -123,11 +212,23 @@ export default function AdminLiveClassesPage() {
       return;
     }
 
+    if (targetingMode === 'BATCH' && !selectedTargetBatchId) {
+      showToast('Please select a targeted batch.', 'error');
+      return;
+    }
+
+    if (targetingMode === 'STUDENT' && !selectedTargetStudentId) {
+      showToast('Please select a targeted student.', 'error');
+      return;
+    }
+
     setSubmitting(true);
     try {
       await api.adminScheduleLiveClass({
         ...scheduleForm,
         scheduledAt: new Date(scheduleForm.scheduledAt).toISOString(),
+        batchId: targetingMode === 'BATCH' ? selectedTargetBatchId : null,
+        studentId: targetingMode === 'STUDENT' ? selectedTargetStudentId : null,
       });
       showToast('Live class scheduled successfully!');
       setShowScheduleModal(false);
@@ -138,6 +239,9 @@ export default function AdminLiveClassesPage() {
         scheduledAt: '',
         meetingUrl: '',
       });
+      setTargetingMode('ALL');
+      setSelectedTargetBatchId('');
+      setSelectedTargetStudentId('');
       await loadData();
     } catch (err) {
       showToast(err.message || 'Failed to schedule live class.', 'error');
@@ -284,14 +388,51 @@ export default function AdminLiveClassesPage() {
           <p className={styles.pageSubtitle}>Schedule live interactions and upload course lecture videos</p>
         </div>
         <div className={styles.headerActions}>
+          <button
+            onClick={() => {
+              const defaultCourseId = courses[0]?.id || '';
+              setSelectedCourseIdForBatches(defaultCourseId);
+              if (defaultCourseId) {
+                loadBatchesAndStudents(defaultCourseId);
+              }
+              setShowManageBatchesModal(true);
+            }}
+            style={{
+              padding: '10px 20px',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid var(--border-glass)',
+              borderRadius: 'var(--radius-md)',
+              color: 'var(--text-primary)',
+              fontWeight: '600',
+              fontSize: '0.9rem',
+              cursor: 'pointer',
+              boxShadow: 'var(--shadow-sm)',
+              transition: 'all var(--transition-base)',
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+            }}
+          >
+            👥 Manage Batches
+          </button>
           <button className={styles.scheduleBtn} onClick={() => {
+            const defaultCourseId = courses[0]?.id || '';
             setScheduleForm({
-              courseId: courses[0]?.id || '',
+              courseId: defaultCourseId,
               title: '',
               description: '',
               scheduledAt: '',
               meetingUrl: '',
             });
+            setTargetingMode('ALL');
+            setSelectedTargetBatchId('');
+            setSelectedTargetStudentId('');
+            if (defaultCourseId) {
+              loadBatchesAndStudents(defaultCourseId);
+            }
             setShowScheduleModal(true);
           }}>
             📡 Schedule Live Class
@@ -314,7 +455,29 @@ export default function AdminLiveClassesPage() {
         </div>
       </div>
 
-      {/* Top Filter and Navigation Tab */}
+      {streamingLiveClassId ? (
+        <div style={{ marginBottom: '30px', padding: '24px', background: 'var(--bg-card)', border: '1px solid var(--border-glass)', borderRadius: 'var(--radius-lg)' }}>
+          <h3 style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
+            <span style={{ animation: 'pulse 1.5s infinite', color: '#ef4444' }}>🔴</span> 
+            <span>Broadcasting:</span> 
+            <span style={{ color: 'var(--text-muted)' }}>
+              {liveClasses.find(lc => lc.id === streamingLiveClassId)?.title}
+            </span>
+          </h3>
+          <AgoraLiveRoom
+            channelName={streamingLiveClassId}
+            token={streamingToken}
+            appId={streamingAppId}
+            uid={streamingUid}
+            isHost={true}
+            onLeave={(wasEnded) => {
+              handleStopStreaming(wasEnded);
+            }}
+          />
+        </div>
+      ) : null}
+ 
+       {/* Top Filter and Navigation Tab */}
       <div className={styles.controlsRow}>
         <div className={styles.tabs}>
           <button
@@ -373,6 +536,21 @@ export default function AdminLiveClassesPage() {
                           🔗 Meeting Link
                         </a>
                       )}
+                      {item.batch && (
+                        <span style={{ fontSize: '0.78rem', color: '#f59e0b', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                          🎯 Batch: {item.batch.batchName}
+                        </span>
+                      )}
+                      {item.student && (
+                        <span style={{ fontSize: '0.78rem', color: '#3b82f6', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                          👤 Student: {item.student.firstName} {item.student.lastName}
+                        </span>
+                      )}
+                      {!item.batchId && !item.studentId && (
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                          👥 Target: All Students
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td>
@@ -409,7 +587,7 @@ export default function AdminLiveClassesPage() {
                     <div className={styles.actionButtons}>
                       {item.status === 'SCHEDULED' && (
                         <>
-                          <button className={styles.startBtn} onClick={() => openStartLiveModal(item)}>
+                          <button className={styles.startBtn} onClick={() => handleStartLiveClassDirect(item)}>
                             ▶️ Start
                           </button>
                           <button className={styles.notifyBtn} onClick={() => handleNotifyStudents(item.id)}>
@@ -419,11 +597,11 @@ export default function AdminLiveClassesPage() {
                       )}
                       {item.status === 'LIVE' && (
                         <>
+                          <button className={styles.startBtn} style={{ backgroundColor: '#10b981', color: '#fff' }} onClick={() => handleStartLiveClassDirect(item)}>
+                            🎥 Resume
+                          </button>
                           <button className={styles.endBtn} onClick={() => handleEndLiveClass(item.id)}>
                             ⏹️ End
-                          </button>
-                          <button className={styles.notifyBtn} onClick={() => handleNotifyStudents(item.id)}>
-                            📣 Ping Live
                           </button>
                         </>
                       )}
@@ -544,6 +722,58 @@ export default function AdminLiveClassesPage() {
                   required
                 />
               </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Target Audience *</label>
+                <select
+                  className={styles.formInput}
+                  value={targetingMode}
+                  onChange={(e) => {
+                    setTargetingMode(e.target.value);
+                    setSelectedTargetBatchId('');
+                    setSelectedTargetStudentId('');
+                  }}
+                  required
+                >
+                  <option value="ALL">All Enrolled Students</option>
+                  <option value="BATCH">Specific Batch</option>
+                  <option value="STUDENT">Individual Student</option>
+                </select>
+              </div>
+
+              {targetingMode === 'BATCH' && (
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Select Batch *</label>
+                  <select
+                    className={styles.formInput}
+                    value={selectedTargetBatchId}
+                    onChange={(e) => setSelectedTargetBatchId(e.target.value)}
+                    required
+                  >
+                    <option value="">-- Select Batch --</option>
+                    {batchesList.map((b) => (
+                      <option key={b.id} value={b.id}>{b.batchName}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {targetingMode === 'STUDENT' && (
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Select Student *</label>
+                  <select
+                    className={styles.formInput}
+                    value={selectedTargetStudentId}
+                    onChange={(e) => setSelectedTargetStudentId(e.target.value)}
+                    required
+                  >
+                    <option value="">-- Select Student --</option>
+                    {studentsList.map((s) => (
+                      <option key={s.id} value={s.id}>{s.firstName} {s.lastName} ({s.email})</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>Default Meeting/Stream URL</label>
@@ -764,6 +994,193 @@ export default function AdminLiveClassesPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* ─── Manage Course Batches Modal ─── */}
+      {showManageBatchesModal && (
+        <div className={styles.modalOverlay} onClick={() => {
+          setShowManageBatchesModal(false);
+          setActiveBatch(null);
+          setBatchForm({ batchName: '', studentIds: [] });
+        }}>
+          <div className={styles.formModal} style={{ maxWidth: '800px' }} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.formHeader}>
+              <h3 className={styles.formTitle}>👥 Manage Course Batches</h3>
+              <button className={styles.closeBtn} onClick={() => {
+                setShowManageBatchesModal(false);
+                setActiveBatch(null);
+                setBatchForm({ batchName: '', studentIds: [] });
+              }}>✕</button>
+            </div>
+
+            <div className={styles.modalBody} style={{ padding: '22px 26px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Select Course</label>
+                <select
+                  className={styles.formInput}
+                  value={selectedCourseIdForBatches}
+                  onChange={(e) => {
+                    setSelectedCourseIdForBatches(e.target.value);
+                    loadBatchesAndStudents(e.target.value);
+                    setActiveBatch(null);
+                    setBatchForm({ batchName: '', studentIds: [] });
+                  }}
+                >
+                  <option value="">-- Select Course --</option>
+                  {courses.map((c) => (
+                    <option key={c.id} value={c.id}>{c.title}</option>
+                  ))}
+                </select>
+              </div>
+
+              {selectedCourseIdForBatches && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                  {/* Left Column: Batches List */}
+                  <div style={{ borderRight: '1px solid var(--border-glass)', paddingRight: '20px' }}>
+                    <h4 style={{ marginBottom: '12px', fontSize: '0.95rem', color: 'var(--text-primary)' }}>Existing Batches</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '300px', overflowY: 'auto' }}>
+                      {batchesList.length === 0 ? (
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>No batches created for this course yet.</div>
+                      ) : (
+                        batchesList.map((b) => (
+                          <div key={b.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)', borderRadius: '6px' }}>
+                            <div>
+                              <div style={{ fontWeight: '600', fontSize: '0.88rem' }}>{b.batchName}</div>
+                              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{b.students?.length || 0} students</div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActiveBatch(b);
+                                  setBatchForm({
+                                    batchName: b.batchName,
+                                    studentIds: b.students?.map((s) => s.id) || [],
+                                  });
+                                }}
+                                style={{ padding: '4px 8px', fontSize: '0.75rem', background: 'var(--bg-glass)', border: '1px solid var(--border-glass)', borderRadius: '4px', cursor: 'pointer', color: 'var(--accent-blue)' }}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  if (!confirm('Are you sure you want to delete this batch?')) return;
+                                  try {
+                                    await api.adminDeleteBatch(b.id);
+                                    showToast('Batch deleted successfully.');
+                                    loadBatchesAndStudents(selectedCourseIdForBatches);
+                                    if (activeBatch?.id === b.id) {
+                                      setActiveBatch(null);
+                                      setBatchForm({ batchName: '', studentIds: [] });
+                                    }
+                                  } catch (err) {
+                                    showToast(err.message || 'Failed to delete batch.', 'error');
+                                  }
+                                }}
+                                style={{ padding: '4px 8px', fontSize: '0.75rem', background: 'var(--bg-glass)', border: '1px solid var(--border-glass)', borderRadius: '4px', cursor: 'pointer', color: 'var(--accent-rose)' }}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right Column: Form */}
+                  <div>
+                    <h4 style={{ marginBottom: '12px', fontSize: '0.95rem', color: 'var(--text-primary)' }}>
+                      {activeBatch ? `Edit Batch: ${activeBatch.batchName}` : 'Create New Batch'}
+                    </h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>Batch Name *</label>
+                        <input
+                          className={styles.formInput}
+                          value={batchForm.batchName}
+                          onChange={(e) => setBatchForm({ ...batchForm, batchName: e.target.value })}
+                          placeholder="e.g. Evening Batch A"
+                        />
+                      </div>
+
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>Select Students</label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '180px', overflowY: 'auto', padding: '10px', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-glass)', borderRadius: '6px' }}>
+                          {studentsList.length === 0 ? (
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>No students enrolled in this course yet.</div>
+                          ) : (
+                            studentsList.map((student) => {
+                              const isChecked = batchForm.studentIds.includes(student.id);
+                              return (
+                                <label key={student.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-primary)' }}>
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={() => {
+                                      setBatchForm((prev) => {
+                                        const nextIds = prev.studentIds.includes(student.id)
+                                          ? prev.studentIds.filter((id) => id !== student.id)
+                                          : [...prev.studentIds, student.id];
+                                        return { ...prev, studentIds: nextIds };
+                                      });
+                                    }}
+                                  />
+                                  <span>{student.firstName} {student.lastName} ({student.email})</span>
+                                </label>
+                              );
+                            })
+                          )}
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '10px' }}>
+                        {activeBatch && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveBatch(null);
+                              setBatchForm({ batchName: '', studentIds: [] });
+                            }}
+                            style={{ padding: '8px 16px', fontSize: '0.85rem', background: 'transparent', border: '1px solid var(--border-glass)', borderRadius: '6px', cursor: 'pointer', color: 'var(--text-muted)' }}
+                          >
+                            Cancel Edit
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          disabled={!batchForm.batchName.trim()}
+                          onClick={async () => {
+                            try {
+                              if (activeBatch) {
+                                await api.adminUpdateBatch(activeBatch.id, batchForm);
+                                showToast('Batch updated successfully.');
+                              } else {
+                                await api.adminCreateBatch({
+                                  courseId: selectedCourseIdForBatches,
+                                  ...batchForm,
+                                });
+                                showToast('Batch created successfully.');
+                              }
+                              setBatchForm({ batchName: '', studentIds: [] });
+                              setActiveBatch(null);
+                              loadBatchesAndStudents(selectedCourseIdForBatches);
+                            } catch (err) {
+                              showToast(err.message || 'Failed to save batch.', 'error');
+                            }
+                          }}
+                          style={{ padding: '8px 16px', fontSize: '0.85rem', background: 'var(--gradient-primary)', border: 'none', borderRadius: '6px', cursor: 'pointer', color: '#fff', fontWeight: '600' }}
+                        >
+                          {activeBatch ? 'Update Batch' : 'Create Batch'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

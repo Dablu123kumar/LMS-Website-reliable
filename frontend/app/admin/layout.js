@@ -12,6 +12,7 @@ const navItems = [
   { href: '/admin/categories', icon: '🏷️', label: 'Categories' },
   { href: '/admin/students', icon: '👥', label: 'Students' },
   { href: '/admin/live-classes', icon: '📡', label: 'Live Classes' },
+  { href: '/admin/inquiries', icon: '✉️', label: 'User Inquiries' },
 ];
 
 const pageTitles = {
@@ -20,6 +21,7 @@ const pageTitles = {
   '/admin/categories': 'Category Management',
   '/admin/students': 'Student Management',
   '/admin/live-classes': 'Live Classes',
+  '/admin/inquiries': 'User Inquiries',
 };
 
 export default function AdminLayout({ children }) {
@@ -86,6 +88,28 @@ export default function AdminLayout({ children }) {
     setAuthChecked(true);
   }, [pathname, router]);
 
+  const [unreadInquiries, setUnreadInquiries] = useState(0);
+
+  useEffect(() => {
+    if (pathname === '/admin/login' || !user) return;
+
+    const fetchUnreadCount = async () => {
+      try {
+        const res = await api.adminGetUnreadInquiriesCount();
+        if (res?.data) {
+          setUnreadInquiries(res.data.count);
+        }
+      } catch (err) {
+        console.error('Failed to fetch unread inquiries count:', err);
+      }
+    };
+
+    fetchUnreadCount();
+    // Poll count every 15 seconds
+    const interval = setInterval(fetchUnreadCount, 15000);
+    return () => clearInterval(interval);
+  }, [pathname, user]);
+
   // Don't render layout for login page
   if (pathname === '/admin/login') {
     return <>{children}</>;
@@ -132,8 +156,8 @@ export default function AdminLayout({ children }) {
         </button>
 
         <Link href="/admin/dashboard" className={styles.sidebarLogo} onClick={closeSidebar}>
-          <span className={styles.logoIcon}>⚡</span>
-          <span className={styles.logoText}>LearnHub</span>
+          <img src="/logo_dark.png" className={`${styles.logoImg} ${styles.logoLight}`} alt="LearnHub Logo" />
+          <img src="/logo_light.png" className={`${styles.logoImg} ${styles.logoDark}`} alt="LearnHub Logo" />
           <span className={styles.adminBadge}>{user?.role || 'ADMIN'}</span>
         </Link>
 
@@ -141,6 +165,7 @@ export default function AdminLayout({ children }) {
         <nav className={styles.sidebarNav}>
           {navItems.map((item) => {
             const isActive = pathname === item.href;
+            const hasBadge = item.href === '/admin/inquiries' && unreadInquiries > 0;
             return (
               <Link
                 key={item.href}
@@ -151,6 +176,9 @@ export default function AdminLayout({ children }) {
               >
                 <span className={styles.navIcon}>{item.icon}</span>
                 <span>{item.label}</span>
+                {hasBadge && !sidebarCollapsed && (
+                  <span className={styles.navBadge}>{unreadInquiries}</span>
+                )}
               </Link>
             );
           })}
@@ -187,6 +215,20 @@ export default function AdminLayout({ children }) {
           </div>
 
           <div className={styles.topBarRight}>
+            <div className={styles.notificationContainer}>
+              <button
+                onClick={() => router.push('/admin/inquiries')}
+                className={styles.notificationBtn}
+                title={`${unreadInquiries} pending inquiries`}
+                aria-label="View Inquiries"
+              >
+                🔔
+                {unreadInquiries > 0 && (
+                  <span className={styles.notificationBadge}>{unreadInquiries}</span>
+                )}
+              </button>
+            </div>
+
             <button
               onClick={toggleTheme}
               className={styles.themeToggleBtn}

@@ -1,5 +1,6 @@
 require('dotenv').config();
 
+// Trigger watch
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
@@ -12,6 +13,7 @@ const { Server } = require('socket.io');
 
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { setupNotificationSocket } = require('./socket/notification.socket');
+const { setupLiveClassSocket } = require('./socket/liveclass.socket');
 
 // Import routes
 const authRoutes = require('./routes/auth.routes');
@@ -20,6 +22,7 @@ const purchaseRoutes = require('./routes/purchase.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
 const videoRoutes = require('./routes/video.routes');
 const adminRoutes = require('./routes/admin.routes');
+const inquiryRoutes = require('./routes/inquiry.routes');
 
 const app = express();
 const server = http.createServer(app);
@@ -38,6 +41,9 @@ app.set('io', io);
 
 // Set up notification namespace
 setupNotificationSocket(io);
+
+// Set up live classroom synchronization namespace
+setupLiveClassSocket(io);
 
 // ─── Global Middleware ───────────────────────────────────────────────────────
 
@@ -141,6 +147,7 @@ app.use('/api/v1/purchase', purchaseRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1/video', videoRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/inquiries', inquiryRoutes);
 
 // ─── Error Handling ──────────────────────────────────────────────────────────
 app.use(notFoundHandler);

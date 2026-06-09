@@ -278,4 +278,28 @@ export const api = {
   adminUpdateStudent: (id, body) => request(`/admin/students/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
   adminDeleteStudent: (id) => request(`/admin/students/${id}`, { method: 'DELETE' }),
   adminUploadFile: (formData) => request('/admin/upload', { method: 'POST', body: formData }),
+
+  // Inquiries APIs
+  createInquiry: (body) => request('/inquiries', { method: 'POST', body: JSON.stringify(body) }),
+  adminGetInquiries: (page = 1, limit = 20, filters = {}) => {
+    const params = new URLSearchParams({ page, limit });
+    if (filters.status) params.append('status', filters.status);
+    if (filters.type) params.append('type', filters.type);
+    if (filters.search) params.append('search', filters.search);
+    return request(`/inquiries/admin/list?${params.toString()}`, { method: 'GET' });
+  },
+  adminGetUnreadInquiriesCount: () => request('/inquiries/admin/unread-count', { method: 'GET' }),
+  adminUpdateInquiryStatus: (id, status) => request(`/inquiries/admin/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  adminDeleteInquiry: (id) => request(`/inquiries/admin/${id}`, { method: 'DELETE' }),
+
+  // Agora Tokens
+  adminGetLiveClassToken: (id) => request(`/admin/live-classes/${id}/token`, { method: 'GET' }),
+  getLiveClassToken: (id) => request(`/dashboard/live-classes/${id}/token`, { method: 'GET' }, true),
+
+  // Batches
+  adminGetBatches: (courseId) => request(`/admin/courses/${courseId}/batches`, { method: 'GET' }),
+  adminCreateBatch: (body) => request('/admin/batches', { method: 'POST', body: JSON.stringify(body) }),
+  adminUpdateBatch: (id, body) => request(`/admin/batches/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+  adminDeleteBatch: (id) => request(`/admin/batches/${id}`, { method: 'DELETE' }),
+  adminGetCourseStudents: (courseId) => request(`/admin/courses/${courseId}/students`, { method: 'GET' }),
 };

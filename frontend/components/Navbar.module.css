@@ -39,6 +39,29 @@
   font-size: 1.6rem;
 }
 
+.logoImg {
+  height: 64px;
+  width: auto;
+  max-width: 240px;
+  object-fit: contain;
+}
+
+.logoLight {
+  display: block;
+}
+
+.logoDark {
+  display: none;
+}
+
+[data-theme='dark'] .logoLight {
+  display: none;
+}
+
+[data-theme='dark'] .logoDark {
+  display: block;
+}
+
 .logoText {
   font-family: var(--font-heading);
   font-size: 1.5rem;
@@ -233,32 +256,74 @@
 
 /* Navbar Search Bar styles */
 .navSearch {
-  flex: 1;
-  max-width: 240px;
-  margin: 0 24px;
+  margin: 0;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  justify-content: flex-end;
+  min-width: 40px;
+  width: 40px;
+}
+
+.navSearchExpanded {
+  width: 240px;
+  min-width: 240px;
 }
 
 .navSearchForm {
   display: flex;
   align-items: center;
-  background: var(--bg-glass);
-  border: 1px solid var(--border-glass);
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
+  padding: 6px;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  width: 100%;
+  height: 40px;
+}
+
+.navSearchExpanded .navSearchForm {
+  background: var(--bg-glass);
+  border-color: var(--border-glass);
   padding: 6px 12px;
-  transition: all 0.3s ease;
 }
 
 .navSearchForm:focus-within {
-  border-color: var(--accent-blue);
-  background: var(--bg-glass-hover);
+  border-color: var(--accent-blue) !important;
+  background: var(--bg-glass-hover) !important;
   box-shadow: var(--shadow-glow);
 }
 
-.navSearchIcon {
-  font-size: 0.95rem;
-  color: var(--text-muted);
-  margin-right: 8px;
+.navSearchIconBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast), transform var(--transition-fast);
   flex-shrink: 0;
+}
+
+.navSearchIconBtn:hover {
+  background: var(--bg-glass);
+  transform: scale(1.05);
+}
+
+.navSearchExpanded .navSearchIconBtn {
+  margin-right: 8px;
+  color: var(--text-muted);
+}
+
+.navSearchExpanded .navSearchIconBtn:hover {
+  background: none;
+  transform: none;
 }
 
 .navSearchInput {
@@ -268,7 +333,18 @@
   color: var(--text-primary);
   font-size: 0.85rem;
   font-family: inherit;
+  width: 0;
+  opacity: 0;
+  padding: 0;
+  pointer-events: none;
+  transition: width 0.3s ease, opacity 0.25s ease;
+}
+
+.inputVisible {
   width: 100%;
+  opacity: 1;
+  pointer-events: all;
+  padding: 2px 0;
 }
 
 .navSearchInput::placeholder {

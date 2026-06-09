@@ -1235,13 +1235,13 @@
     gap: 36px;
   }
   .categoryGrid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
   .stripGrid {
     grid-template-columns: repeat(2, 1fr);
   }
   .coursesGrid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
   .techGrid {
     grid-template-columns: repeat(4, 1fr);
@@ -1280,6 +1280,12 @@
   .sliderDots {
     bottom: 140px;
   }
+  .categoryGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .coursesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
   .marketingGrid {
     grid-template-columns: 1fr;
   }
@@ -1311,7 +1317,7 @@
     width: 100%;
   }
   .categoryGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
   .stripGrid {
     grid-template-columns: 1fr;
@@ -1341,6 +1347,12 @@
   }
   .googleRatingBadge {
     width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .categoryGrid {
+    grid-template-columns: 1fr;
   }
 }
 

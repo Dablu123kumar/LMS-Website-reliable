@@ -1,0 +1,27 @@
+.typewriterWrapper {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+}
+
+.typedText {
+  background: var(--gradient-accent, linear-gradient(135deg, #6366f1, #06b6d4));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-family: var(--font-heading);
+  font-weight: 800;
+}
+
+.cursor {
+  color: var(--accent-blue, #6366f1);
+  font-weight: 400;
+  animation: blink 0.8s step-end infinite;
+  margin-left: 2px;
+  font-family: var(--font-body);
+}
+
+@keyframes blink {
+  from, to { opacity: 0; }
+  50% { opacity: 1; }
+}
