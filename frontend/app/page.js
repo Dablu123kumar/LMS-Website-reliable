@@ -14,7 +14,7 @@ import styles from './page.module.css';
 
 
 /* ── Scroll Reveal Hook ── */
-function useReveal() {
+function useReveal(deps = []) {
   const ref = useRef(null);
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -28,7 +28,7 @@ function useReveal() {
     const nodes = ref.current?.querySelectorAll('.reveal');
     nodes?.forEach((n) => observer.observe(n));
     return () => observer.disconnect();
-  }, []);
+  }, deps);
   return ref;
 }
 
@@ -59,11 +59,11 @@ function FAQAccordion({ items }) {
 }
 
 export default function HomePage() {
-  const pageRef = useReveal();
-  const router = useRouter();
   const [coursesList, setCoursesList] = useState(courses);
   const [categoriesList, setCategoriesList] = useState(categories);
   const [activeTab, setActiveTab] = useState('all');
+  const pageRef = useReveal([coursesList, categoriesList, activeTab]);
+  const router = useRouter();
 
   // Hero Slider Index State
   const [currentSlide, setCurrentSlide] = useState(0);

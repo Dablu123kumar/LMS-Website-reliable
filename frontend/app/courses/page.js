@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, Suspense } from 'react';
+import { useState, useMemo, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -8,6 +8,25 @@ import CourseCard from '@/components/CourseCard';
 import { api } from '@/lib/api';
 import { courses as mockCourses, categories as mockCategories } from '@/lib/data';
 import styles from './page.module.css';
+
+/* ── Scroll Reveal Hook ── */
+function useReveal(deps = []) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) e.target.classList.add('revealed');
+        });
+      },
+      { threshold: 0.05 }
+    );
+    const nodes = ref.current?.querySelectorAll('.reveal');
+    nodes?.forEach((n) => observer.observe(n));
+    return () => observer.disconnect();
+  }, deps);
+  return ref;
+}
 
 function CoursesContent() {
   const searchParams = useSearchParams();
@@ -17,6 +36,7 @@ function CoursesContent() {
   const [sort, setSort] = useState('popular');
   const [coursesList, setCoursesList] = useState(mockCourses);
   const [categoriesList, setCategoriesList] = useState(mockCategories);
+  const pageRef = useReveal([coursesList, categoriesList, selectedCat, difficulty, sort]);
 
   // Sync state with URL search params when they change
   useEffect(() => {
@@ -126,7 +146,7 @@ function CoursesContent() {
   }, [search, selectedCat, difficulty, sort, coursesList]);
 
   return (
-    <div>
+    <div ref={pageRef}>
       <Navbar />
 
       {/* Header */}
