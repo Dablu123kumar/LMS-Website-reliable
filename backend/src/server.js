@@ -27,10 +27,42 @@ const inquiryRoutes = require('./routes/inquiry.routes');
 const app = express();
 const server = http.createServer(app);
 
+// ─── CORS Configuration ──────────────────────────────────────────────────────
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'https://lms-website-reliable.vercel.app',
+];
+
+if (process.env.FRONTEND_URL) {
+  const envOrigins = process.env.FRONTEND_URL.split(',').map(item => item.trim());
+  envOrigins.forEach(o => {
+    if (o && !allowedOrigins.includes(o)) {
+      allowedOrigins.push(o);
+    }
+  });
+}
+
+const corsOriginOption = (origin, callback) => {
+  // Allow requests with no origin (like mobile apps, curl, postman, etc.)
+  if (!origin) return callback(null, true);
+  
+  const isAllowed = allowedOrigins.includes(origin) || 
+                    origin.endsWith('.vercel.app') || 
+                    /^http:\/\/localhost:\d+$/.test(origin);
+                    
+  if (isAllowed) {
+    callback(null, true);
+  } else {
+    console.warn(`[CORS] Rejected request from origin: ${origin}`);
+    callback(null, false);
+  }
+};
+
 // ─── Socket.IO Setup ────────────────────────────────────────────────────────
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: corsOriginOption,
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -50,10 +82,10 @@ setupLiveClassSocket(io);
 // CORS
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: corsOriginOption,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
   })
 );
 
