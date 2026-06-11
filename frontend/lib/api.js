@@ -80,7 +80,8 @@ async function request(path, options = {}, isLms = false) {
   const data = await response.json();
 
   if (response.status === 401) {
-    if (typeof window !== 'undefined') {
+    const isLoginRequest = path === '/auth/login' || path === '/auth/lms/login';
+    if (!isLoginRequest && typeof window !== 'undefined') {
       if (isLms) {
         localStorage.removeItem('lms_token');
         localStorage.removeItem('lms_user');
@@ -88,7 +89,7 @@ async function request(path, options = {}, isLms = false) {
       } else {
         localStorage.removeItem('general_token');
         localStorage.removeItem('general_user');
-        window.location.href = '/admin/login';
+        window.location.href = '/auth/login';
       }
     }
   }
@@ -232,7 +233,7 @@ export const api = {
   getPurchaseHistory: () => request('/purchase/history', { method: 'GET' }),
 
   // LMS Auth & Dashboard
-  lmsLogin: (body) => request('/auth/lms/login', { method: 'POST', body: JSON.stringify(body) }),
+  lmsLogin: (body) => request('/auth/lms/login', { method: 'POST', body: JSON.stringify(body) }, true),
   lmsLogout: () => request('/auth/lms/logout', { method: 'POST' }, true),
   getLmsMe: () => request('/auth/lms/me', { method: 'GET' }, true),
   getMyCourses: () => request('/dashboard/my-courses', { method: 'GET' }, true),

@@ -28,6 +28,7 @@ export default function LmsLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [user, setUser] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
   const [theme, setTheme] = useState('light');
 
   useEffect(() => {
@@ -59,14 +60,34 @@ export default function LmsLayout({ children }) {
   };
 
   useEffect(() => {
+    // Don't guard the login page
+    if (pathname === '/lms/login') {
+      setAuthChecked(true);
+      return;
+    }
+
     // Check if lms user is logged in
     const lmsUser = getLmsUser();
+    if (!lmsUser) {
+      router.push('/lms/login');
+      return;
+    }
     setUser(lmsUser);
-  }, [pathname]);
+    setAuthChecked(true);
+  }, [pathname, router]);
 
   // Don't render layout for LMS login page
   if (pathname === '/lms/login') {
     return <>{children}</>;
+  }
+
+  // Don't render until auth is checked
+  if (!authChecked) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: 'var(--bg-primary)' }}>
+        <div style={{ color: 'var(--text-muted)' }}>Checking permissions...</div>
+      </div>
+    );
   }
 
   const getPageTitle = () => {

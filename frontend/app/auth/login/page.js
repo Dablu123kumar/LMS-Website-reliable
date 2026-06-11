@@ -34,7 +34,16 @@ export default function LoginPage() {
         const res = await api.login({ email: form.email, password: form.password });
         setGeneralToken(res.data.token);
         setGeneralUser(res.data.user);
-        router.push('/courses');
+
+        // Role-based routing
+        const role = res.data.user.role;
+        if (role === 'ADMIN' || role === 'INSTRUCTOR') {
+          router.push('/admin/dashboard');
+        } else {
+          const params = new URLSearchParams(window.location.search);
+          const redirectUrl = params.get('redirect') || '/courses';
+          router.push(redirectUrl);
+        }
         router.refresh();
       } catch (err) {
         setApiError(err.message || 'Failed to login. Please try again.');

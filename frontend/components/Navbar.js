@@ -322,7 +322,7 @@ export default function Navbar() {
                 <div className={styles.dropdownLinks}>
                   {user ? (
                     <>
-                      <Link href="/lms/login" className={styles.dropdownLink} onClick={() => setProfileOpen(false)}>
+                      <Link href="/lms/dashboard" className={styles.dropdownLink} onClick={() => setProfileOpen(false)}>
                         🎓 LMS Dashboard
                       </Link>
                       {(user.role === 'ADMIN' || user.role === 'INSTRUCTOR') && (
@@ -419,7 +419,7 @@ export default function Navbar() {
               >
                 👤 My Profile
               </Link>
-              <Link href="/lms/login" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>
+              <Link href="/lms/dashboard" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>
                 🎓 LMS Dashboard
               </Link>
               {(user.role === 'ADMIN' || user.role === 'INSTRUCTOR') && (

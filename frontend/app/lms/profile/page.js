@@ -232,7 +232,7 @@ export default function ProfilePage() {
             <h3>{profile.role === 'ADMIN' ? '⚡ Administrator' : '🎓 Course Instructor'}</h3>
             <p>You have privileged access to the LearnHub administration console.</p>
           </div>
-          <Link href="/admin/login" className={styles.dashboardLink}>
+          <Link href="/admin/dashboard" className={styles.dashboardLink}>
             {profile.role === 'ADMIN' ? 'Go to Admin Dashboard →' : 'Go to Instructor Dashboard →'}
           </Link>
         </div>

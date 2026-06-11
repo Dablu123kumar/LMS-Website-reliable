@@ -71,16 +71,10 @@ export default function AdminLayout({ children }) {
 
 
   useEffect(() => {
-    // Don't guard the login page
-    if (pathname === '/admin/login') {
-      setAuthChecked(true);
-      return;
-    }
-
     const storedUser = getGeneralUser();
 
     if (!storedUser || (storedUser.role !== 'ADMIN' && storedUser.role !== 'INSTRUCTOR')) {
-      router.push('/admin/login');
+      router.push('/auth/login');
       return;
     }
 
@@ -91,7 +85,7 @@ export default function AdminLayout({ children }) {
   const [unreadInquiries, setUnreadInquiries] = useState(0);
 
   useEffect(() => {
-    if (pathname === '/admin/login' || !user) return;
+    if (!user) return;
 
     const fetchUnreadCount = async () => {
       try {
@@ -109,11 +103,6 @@ export default function AdminLayout({ children }) {
     const interval = setInterval(fetchUnreadCount, 15000);
     return () => clearInterval(interval);
   }, [pathname, user]);
-
-  // Don't render layout for login page
-  if (pathname === '/admin/login') {
-    return <>{children}</>;
-  }
 
   // Don't render until auth is checked
   if (!authChecked) {
@@ -135,7 +124,7 @@ export default function AdminLayout({ children }) {
     }
     setGeneralToken(null);
     setGeneralUser(null);
-    router.push('/admin/login');
+    router.push('/auth/login');
   };
 
   const getInitials = () => {

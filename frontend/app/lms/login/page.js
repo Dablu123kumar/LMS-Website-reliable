@@ -48,6 +48,7 @@ export default function LmsLoginPage() {
   const handleChange = (field) => (e) => {
     setForm({ ...form, [field]: e.target.value });
     if (errors[field]) setErrors({ ...errors, [field]: '' });
+    if (apiError) setApiError('');
   };
 
   return (

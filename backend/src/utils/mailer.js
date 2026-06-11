@@ -8,6 +8,7 @@ function createTransporter() {
   const host = process.env.EMAIL_HOST;
   const user = process.env.EMAIL_USER;
   const pass = process.env.EMAIL_PASS;
+  const port = parseInt(process.env.EMAIL_PORT) || 587;
 
   if (!host || !user || !pass || user === 'your-email@gmail.com') {
     return null;
@@ -15,9 +16,12 @@ function createTransporter() {
 
   return nodemailer.createTransport({
     host,
-    port: parseInt(process.env.EMAIL_PORT) || 587,
-    secure: false,
+    port,
+    secure: port === 465,
     auth: { user, pass },
+    tls: {
+      rejectUnauthorized: false,
+    },
   });
 }
 
